@@ -1,0 +1,242 @@
+/* Global Styles */
+:root {
+    --primary-color: #4C84FF;
+    --secondary-color: #6C757D;
+    --dark-color: #2C3E50;
+    --light-color: #F8F9FA;
+    --success-color: #2ECC71;
+    --warning-color: #F1C40F;
+    --danger-color: #E74C3C;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--dark-color);
+}
+
+/* Navigation */
+.navbar {
+    background-color: rgba(44, 62, 80, 0.95) !important;
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    position: relative;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.navbar-brand i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    margin: 0 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+.login-btn {
+    padding: 0.5rem 1.5rem !important;
+    border-radius: 25px;
+    margin-left: 1rem;
+}
+
+/* Dropdown Styles */
+.dropdown-menu {
+    background-color: white;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin-top: 0.5rem;
+    z-index: 1001;
+}
+
+.dropdown-item {
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+}
+
+.dropdown-item button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0;
+    color: inherit;
+}
+
+.dropdown-item button:hover {
+    color: var(--primary-color);
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    opacity: 0.1;
+}
+
+.hero-buttons .btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    transition: transform 0.3s ease;
+}
+
+.hero-buttons .btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+}
+
+.icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--light-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.icon-wrapper i {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+/* Feature Boxes */
+.feature-box {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feature-box i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--dark-color);
+    color: white;
+}
+
+.footer h5 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.footer ul li {
+    margin-bottom: 0.75rem;
+}
+
+.footer a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: var(--primary-color);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero {
+        height: auto;
+        padding: 120px 0 60px;
+    }
+    
+    .feature-card {
+        margin-bottom: 2rem;
+    }
+    
+    .feature-box {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feature-card, .feature-box {
+    animation: fadeIn 0.6s ease-out forwards;
+} 
