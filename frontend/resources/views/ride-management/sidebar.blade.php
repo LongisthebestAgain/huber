@@ -30,7 +30,7 @@
             <a class="nav-link {{ request()->routeIs('driver.my-rides') ? 'active bg-primary text-white rounded' : 'text-dark' }}" href="{{ route('driver.my-rides') }}"><i class="fas fa-random me-2"></i>My Rides</a>
         </li>
         <li class="nav-item mb-2">
-            <a class="nav-link text-dark" href="#"><i class="fas fa-chart-line me-2"></i>Earnings</a>
+            <a class="nav-link {{ request()->routeIs('driver.earnings') ? 'active bg-primary text-white rounded' : 'text-dark' }}" href="{{ route('driver.earnings') }}"><i class="fas fa-chart-line me-2"></i>Earnings</a>
         </li>
         <li class="nav-item mb-2">
             <a class="nav-link text-dark" href="#"><i class="fas fa-star me-2"></i>Reviews</a>

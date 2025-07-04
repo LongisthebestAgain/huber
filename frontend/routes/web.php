@@ -61,6 +61,7 @@ Route::get('/driver/my-rides', [DriverRideManagementController::class, 'myRides'
 Route::get('/driver/rides/{ride}/edit', [DriverRideManagementController::class, 'edit'])->name('driver.rides.edit');
 Route::put('/driver/rides/{ride}', [DriverRideManagementController::class, 'update'])->name('driver.rides.update');
 Route::get('/find-rides', [DriverRideManagementController::class, 'findRides'])->name('find.rides');
+Route::get('/driver/earnings', [DriverRideManagementController::class, 'earnings'])->name('driver.earnings');
 
 // Booking routes
 Route::get('/booking/payment/{rideId}/{tripType?}', [BookingController::class, 'showPaymentPage'])->name('booking.payment');

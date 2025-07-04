@@ -371,4 +371,25 @@ class DriverRideManagementController extends Controller
             'filters' => $request->all(),
         ]);
     }
+
+    public function earnings(Request $request)
+    {
+        $userData = session('user');
+        if (!$userData || !isset($userData['id'])) {
+            return redirect()->route('login')->with('error', 'Please login to access earnings.');
+        }
+        $user = User::find($userData['id']);
+        if (!$user) {
+            session()->forget(['user', 'user_role']);
+            return redirect()->route('login')->with('error', 'User not found. Please login again.');
+        }
+        // Get all bookings for rides owned by this driver
+        $bookings = \App\Models\RidePurchase::with(['ride', 'user'])
+            ->whereHas('ride', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('ride-management.earnings', compact('user', 'bookings'));
+    }
 } 
