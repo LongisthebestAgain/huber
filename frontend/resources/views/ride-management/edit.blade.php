@@ -16,19 +16,13 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="station_location" class="form-label fw-semibold">Station Location</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="station_location" name="station_location" value="{{ old('station_location', $ride->station_location) }}" required oninput="updateMapLink('station_location')" placeholder="Enter pickup station...">
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode(old('station_location', $ride->station_location)) }}" target="_blank" class="btn btn-outline-secondary" id="station_location_map" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a>
-                        </div>
+                        <input type="text" class="form-control" id="station_location" name="station_location" value="{{ old('station_location', $ride->station_location) }}" required placeholder="Enter pickup station...">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="destination" class="form-label fw-semibold">Destination</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination', $ride->destination) }}" required oninput="updateMapLink('destination')" placeholder="Enter destination...">
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode(old('destination', $ride->destination)) }}" target="_blank" class="btn btn-outline-secondary" id="destination_map" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a>
-                        </div>
+                        <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination', $ride->destination) }}" required placeholder="Enter destination...">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -84,6 +78,20 @@
                     </div>
                 </div>
             </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
+                        <input type="url" class="form-control" id="station_location_map_url" name="station_location_map_url" value="{{ old('station_location_map_url', $ride->station_location_map_url) }}" placeholder="https://maps.google.com/...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
+                        <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url', $ride->destination_map_url) }}" placeholder="https://maps.google.com/...">
+                    </div>
+                </div>
+            </div>
             <div id="return-fields" class="bg-white p-4 rounded shadow-sm mb-3" style="display: none;">
                 <hr>
                 <h5 class="mb-3 text-success"><i class="fas fa-undo-alt me-2"></i>Return Trip Details</h5>
@@ -91,10 +99,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="return_station_location" class="form-label fw-semibold">Return Station Location</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="return_station_location" name="return_station_location" value="{{ old('return_station_location', $ride->return_station_location) }}" oninput="updateMapLink('return_station_location')" placeholder="Enter return pickup station...">
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode(old('return_station_location', $ride->return_station_location)) }}" target="_blank" class="btn btn-outline-secondary" id="return_station_location_map" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a>
-                            </div>
+                            <input type="text" class="form-control" id="return_station_location" name="return_station_location" value="{{ old('return_station_location', $ride->return_station_location) }}" placeholder="Enter return pickup station...">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -123,9 +128,15 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                        <div class="mb-3" id="return-price-per-person-field">
                             <label for="return_price_per_person" class="form-label fw-semibold">Return Price Per Person</label>
                             <input type="number" step="0.01" min="0" class="form-control" id="return_price_per_person" name="return_price_per_person" value="{{ old('return_price_per_person', $ride->return_price_per_person) }}" placeholder="$ per person">
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="return-exclusive-price-field">
+                        <div class="mb-3">
+                            <label for="return_exclusive_price" class="form-label fw-semibold">Return Exclusive Price (Total)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="return_exclusive_price" name="return_exclusive_price" value="{{ old('return_exclusive_price', $ride->return_exclusive_price) }}" placeholder="$ total">
                         </div>
                     </div>
                 </div>
@@ -144,32 +155,18 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="station_location_map_url" name="station_location_map_url" value="{{ old('station_location_map_url', $ride->station_location_map_url) }}" placeholder="https://maps.google.com/...">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
+                            <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url', $ride->return_station_location_map_url) }}" placeholder="https://maps.google.com/...">
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url', $ride->destination_map_url) }}" placeholder="https://maps.google.com/...">
-                    </div>
-                </div>
-            </div>
-            <div id="return-fields" class="row g-4" style="display: none;">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url', $ride->return_station_location_map_url) }}" placeholder="https://maps.google.com/...">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url', $ride->return_destination_map_url) }}" placeholder="https://maps.google.com/...">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
+                            <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url', $ride->return_destination_map_url) }}" placeholder="https://maps.google.com/...">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,13 +204,10 @@ function toggleReturnFields() {
     var twoWay = document.getElementById('two_way').checked;
     document.getElementById('return-fields').style.display = twoWay ? 'block' : 'none';
 }
-function updateMapLink(field) {
-    var input = document.getElementById(field);
-    var link = document.getElementById(field + '_map');
-    if (input && link) {
-        var query = encodeURIComponent(input.value);
-        link.href = 'https://www.google.com/maps/search/?api=1&query=' + query;
-    }
+function toggleReturnPriceFields() {
+    var returnExclusive = document.getElementById('return_exclusive').checked;
+    document.getElementById('return-price-per-person-field').style.display = returnExclusive ? 'none' : 'block';
+    document.getElementById('return-exclusive-price-field').style.display = returnExclusive ? 'block' : 'none';
 }
 function syncReturnDestination() {
     var station = document.getElementById('station_location').value;
@@ -223,14 +217,12 @@ function syncReturnDestination() {
 document.getElementById('station_location').addEventListener('input', syncReturnDestination);
 document.addEventListener('DOMContentLoaded', function() {
     toggleReturnFields();
+    toggleReturnPriceFields();
     document.getElementById('one_way').addEventListener('change', toggleReturnFields);
     document.getElementById('two_way').addEventListener('change', toggleReturnFields);
-    // Initialize map links
-    updateMapLink('station_location');
-    updateMapLink('destination');
-    updateMapLink('return_station_location');
-    updateMapLink('return_destination');
+    document.getElementById('return_exclusive').addEventListener('change', toggleReturnPriceFields);
+    document.getElementById('return_shared').addEventListener('change', toggleReturnPriceFields);
     syncReturnDestination();
 });
 </script>
-@endsection 
+@endsection
