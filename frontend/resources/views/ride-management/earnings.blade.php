@@ -36,9 +36,15 @@
                         @foreach($bookings as $i => $booking)
                         <tr>
                             <td>{{ $i+1 }}</td>
-                            <td>{{ $booking->user->name }}</td>
                             <td>
-                                @if($booking->user->profile_picture)
+                                @if($booking->user)
+                                    {{ $booking->user->name }}
+                                @else
+                                    <span class="text-muted">Unknown</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($booking->user && $booking->user->profile_picture)
                                     <img src="{{ asset('storage/' . $booking->user->profile_picture) }}" alt="Profile" class="rounded-circle" width="36" height="36">
                                 @else
                                     <span class="badge bg-secondary">No Photo</span>

@@ -140,13 +140,25 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     @if($entry['is_exclusive'])
-                                        <a href="{{ route('booking.payment', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
-                                            <i class="fas fa-credit-card me-2"></i>Book Now
-                                        </a>
+                                        @if($entry['has_booked'])
+                                            <button class="btn btn-secondary px-4 py-2" disabled>
+                                                <i class="fas fa-check me-2"></i>Booked
+                                            </button>
+                                        @else
+                                            <a href="{{ route('booking.payment', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
+                                                <i class="fas fa-credit-card me-2"></i>Book Now
+                                            </a>
+                                        @endif
                                     @else
-                                        <a href="#" class="btn btn-outline-primary px-4 py-2">
-                                            <i class="fas fa-info-circle me-2"></i>Request Booking
-                                        </a>
+                                        @if($entry['has_booked'])
+                                            <button class="btn btn-secondary px-4 py-2" disabled>
+                                                <i class="fas fa-check me-2"></i>Booked
+                                            </button>
+                                        @else
+                                            <a href="#" class="btn btn-outline-primary px-4 py-2">
+                                                <i class="fas fa-info-circle me-2"></i>Request Booking
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

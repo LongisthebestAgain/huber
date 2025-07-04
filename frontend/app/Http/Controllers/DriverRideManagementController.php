@@ -241,6 +241,8 @@ class DriverRideManagementController extends Controller
 
     public function findRides(Request $request)
     {
+        $userData = session('user');
+        $userId = $userData['id'] ?? null;
         $query = \App\Models\Ride::with(['user.driverDocuments']);
 
         // Filtering
@@ -287,6 +289,13 @@ class DriverRideManagementController extends Controller
         $rideEntries = [];
         foreach ($rides as $ride) {
             // Outgoing trip
+            $hasBookedGo = false;
+            if ($userId) {
+                $hasBookedGo = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                    ->where('user_id', $userId)
+                    ->where('trip_type', 'go')
+                    ->exists();
+            }
             $rideEntries[] = [
                 'type' => 'Go',
                 'ride' => $ride,
@@ -298,9 +307,17 @@ class DriverRideManagementController extends Controller
                 'is_exclusive' => $ride->is_exclusive,
                 'price_per_person' => $ride->is_exclusive ? $ride->go_to_exclusive_price : $ride->go_to_price_per_person,
                 'user' => $ride->user,
+                'has_booked' => $hasBookedGo,
             ];
             // Return trip (if exists)
             if ($ride->is_two_way && $ride->return_date && $ride->return_time) {
+                $hasBookedReturn = false;
+                if ($userId) {
+                    $hasBookedReturn = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                        ->where('user_id', $userId)
+                        ->where('trip_type', 'return')
+                        ->exists();
+                }
                 $rideEntries[] = [
                     'type' => 'Back',
                     'ride' => $ride,
@@ -312,6 +329,7 @@ class DriverRideManagementController extends Controller
                     'is_exclusive' => $ride->return_is_exclusive,
                     'price_per_person' => $ride->return_is_exclusive ? $ride->return_exclusive_price : $ride->return_price_per_person,
                     'user' => $ride->user,
+                    'has_booked' => $hasBookedReturn,
                 ];
             }
         }
