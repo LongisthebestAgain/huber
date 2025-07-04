@@ -66,6 +66,8 @@ Route::get('/driver/earnings', [DriverRideManagementController::class, 'earnings
 
 // Booking routes
 Route::get('/booking/payment/{rideId}/{tripType?}', [BookingController::class, 'showPaymentPage'])->name('booking.payment');
+Route::get('/booking/seat-selection/{rideId}/{tripType?}', [BookingController::class, 'showSeatSelection'])->name('booking.seat-selection');
+Route::post('/booking/seat-selection/{rideId}/{tripType?}', [BookingController::class, 'processSeatSelection'])->name('booking.process-seat-selection');
 Route::post('/booking/process/{rideId}/{tripType?}', [BookingController::class, 'processBooking'])->name('booking.process');
 Route::get('/booking/thank-you/{bookingId}', [BookingController::class, 'showThankYou'])->name('booking.thank-you');
 Route::get('/booking/confirmation/{bookingId}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');

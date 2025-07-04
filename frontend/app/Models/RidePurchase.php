@@ -21,6 +21,8 @@ class RidePurchase extends Model
         'special_requests',
         'trip_type',
         'passenger_details',
+        'selected_seats',
+        'seats_confirmed',
         'contact_phone',
         'booking_reference',
         'booking_date',
@@ -29,6 +31,8 @@ class RidePurchase extends Model
 
     protected $casts = [
         'passenger_details' => 'array',
+        'selected_seats' => 'array',
+        'seats_confirmed' => 'boolean',
         'total_price' => 'decimal:2',
         'booking_date' => 'date',
         'booking_time' => 'datetime:H:i',

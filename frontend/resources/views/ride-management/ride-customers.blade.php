@@ -252,6 +252,9 @@
                             </td>
                             <td>
                                 <span class="badge bg-info">{{ $booking->number_of_seats }} seat(s)</span>
+                                @if($booking->selected_seats && is_array($booking->selected_seats))
+                                    <br><small class="text-muted">Seats: {{ implode(', ', $booking->selected_seats) }}</small>
+                                @endif
                             </td>
                             <td class="text-success fw-bold">${{ number_format($booking->total_price, 2) }}</td>
                             <td>

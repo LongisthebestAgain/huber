@@ -65,7 +65,12 @@
                                 @endif
                             </td>
                             <td>{{ ucfirst($booking->trip_type) }}</td>
-                            <td>{{ $booking->number_of_seats }}</td>
+                            <td>
+                                {{ $booking->number_of_seats }}
+                                @if($booking->selected_seats && is_array($booking->selected_seats))
+                                    <br><small class="text-muted">Seats: {{ implode(', ', $booking->selected_seats) }}</small>
+                                @endif
+                            </td>
                             <td class="text-success fw-bold">${{ number_format($booking->total_price, 2) }}</td>
                             <td>{{ ucfirst($booking->payment_method) }}</td>
                             <td><span class="badge bg-primary">{{ $booking->booking_reference }}</span></td>

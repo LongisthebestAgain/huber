@@ -155,8 +155,8 @@
                                                 <i class="fas fa-check me-2"></i>Booked
                                             </button>
                                         @else
-                                            <a href="#" class="btn btn-outline-primary px-4 py-2">
-                                                <i class="fas fa-info-circle me-2"></i>Request Booking
+                                            <a href="{{ route('booking.seat-selection', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
+                                                <i class="fas fa-chair me-2"></i>Select Seats
                                             </a>
                                         @endif
                                     @endif

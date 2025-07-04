@@ -14,7 +14,7 @@
             @method('PUT')
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="station_location" class="form-label fw-semibold">Station Location</label>
                         <input type="text" class="form-control" id="station_location" name="station_location" value="{{ old('station_location', $ride->station_location) }}" required placeholder="Enter pickup station...">
                     </div>
@@ -23,19 +23,19 @@
                     <div class="mb-3">
                         <label for="destination" class="form-label fw-semibold">Destination</label>
                         <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination', $ride->destination) }}" required placeholder="Enter destination...">
-                    </div>
+            </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="date" class="form-label fw-semibold">Date</label>
-                        <input type="date" class="form-control" id="date" name="date" value="{{ old('date', $ride->date) }}" required>
-                    </div>
+                <input type="date" class="form-control" id="date" name="date" value="{{ old('date', $ride->date) }}" required>
+            </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="time" class="form-label fw-semibold">Time</label>
-                        <input type="time" class="form-control" id="time" name="time" value="{{ old('time', $ride->time) }}" required>
-                    </div>
+                <input type="time" class="form-control" id="time" name="time" value="{{ old('time', $ride->time) }}" required>
+            </div>
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
@@ -44,49 +44,49 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="go_to_price_per_person" class="form-label fw-semibold">Go To Price Per Person</label>
                         <input type="number" step="0.01" min="0" class="form-control" id="go_to_price_per_person" name="go_to_price_per_person" value="{{ old('go_to_price_per_person', $ride->go_to_price_per_person) }}" placeholder="$ per person">
                     </div>
-                </div>
+            </div>
             </div>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label class="form-label fw-semibold">Type</label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_exclusive" id="exclusive" value="1" {{ old('is_exclusive', $ride->is_exclusive) == '1' ? 'checked' : '' }} required>
-                            <label class="form-check-label" for="exclusive">Exclusive</label>
-                        </div>
+                    <input class="form-check-input" type="radio" name="is_exclusive" id="exclusive" value="1" {{ old('is_exclusive', $ride->is_exclusive) == '1' ? 'checked' : '' }} required>
+                    <label class="form-check-label" for="exclusive">Exclusive</label>
+                </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_exclusive" id="shared" value="0" {{ old('is_exclusive', $ride->is_exclusive) == '0' ? 'checked' : '' }} required>
-                            <label class="form-check-label" for="shared">Shared</label>
-                        </div>
-                    </div>
+                    <input class="form-check-input" type="radio" name="is_exclusive" id="shared" value="0" {{ old('is_exclusive', $ride->is_exclusive) == '0' ? 'checked' : '' }} required>
+                    <label class="form-check-label" for="shared">Shared</label>
+                </div>
+            </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label class="form-label fw-semibold">Trip Type</label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_two_way" id="one_way" value="0" {{ old('is_two_way', $ride->is_two_way) == '0' ? 'checked' : '' }} required onclick="toggleReturnFields()">
-                            <label class="form-check-label" for="one_way">One Way</label>
-                        </div>
+                    <input class="form-check-input" type="radio" name="is_two_way" id="one_way" value="0" {{ old('is_two_way', $ride->is_two_way) == '0' ? 'checked' : '' }} required onclick="toggleReturnFields()">
+                    <label class="form-check-label" for="one_way">One Way</label>
+                </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_two_way" id="two_way" value="1" {{ old('is_two_way', $ride->is_two_way) == '1' ? 'checked' : '' }} required onclick="toggleReturnFields()">
-                            <label class="form-check-label" for="two_way">Two Way (Return)</label>
+                    <input class="form-check-input" type="radio" name="is_two_way" id="two_way" value="1" {{ old('is_two_way', $ride->is_two_way) == '1' ? 'checked' : '' }} required onclick="toggleReturnFields()">
+                    <label class="form-check-label" for="two_way">Two Way (Return)</label>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
+                <div class="mb-3">
                         <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
                         <input type="url" class="form-control" id="station_location_map_url" name="station_location_map_url" value="{{ old('station_location_map_url', $ride->station_location_map_url) }}" placeholder="https://maps.google.com/...">
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
+                <div class="mb-3">
                         <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
                         <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url', $ride->destination_map_url) }}" placeholder="https://maps.google.com/...">
                     </div>
@@ -110,21 +110,21 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_date" class="form-label fw-semibold">Return Date</label>
-                            <input type="date" class="form-control" id="return_date" name="return_date" value="{{ old('return_date', $ride->return_date) }}">
-                        </div>
+                    <input type="date" class="form-control" id="return_date" name="return_date" value="{{ old('return_date', $ride->return_date) }}">
+                </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_time" class="form-label fw-semibold">Return Time</label>
-                            <input type="time" class="form-control" id="return_time" name="return_time" value="{{ old('return_time', $ride->return_time) }}">
-                        </div>
+                    <input type="time" class="form-control" id="return_time" name="return_time" value="{{ old('return_time', $ride->return_time) }}">
+                </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_available_seats" class="form-label fw-semibold">Return Available Seats</label>
-                            <input type="number" class="form-control" id="return_available_seats" name="return_available_seats" value="{{ old('return_available_seats', $ride->return_available_seats) }}">
+                    <input type="number" class="form-control" id="return_available_seats" name="return_available_seats" value="{{ old('return_available_seats', $ride->return_available_seats) }}">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -142,30 +142,30 @@
                 </div>
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label class="form-label fw-semibold">Return Type</label>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_exclusive" value="1" {{ old('return_is_exclusive', $ride->return_is_exclusive) == '1' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="return_exclusive">Exclusive</label>
-                            </div>
+                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_exclusive" value="1" {{ old('return_is_exclusive', $ride->return_is_exclusive) == '1' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="return_exclusive">Exclusive</label>
+                    </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_shared" value="0" {{ old('return_is_exclusive', $ride->return_is_exclusive) == '0' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="return_shared">Shared</label>
-                            </div>
-                        </div>
+                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_shared" value="0" {{ old('return_is_exclusive', $ride->return_is_exclusive) == '0' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="return_shared">Shared</label>
+                    </div>
+                </div>
                     </div>
                 </div>
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
-                            <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url', $ride->return_station_location_map_url) }}" placeholder="https://maps.google.com/...">
-                        </div>
+                <div class="mb-3">
+                    <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
+                    <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url', $ride->return_station_location_map_url) }}" placeholder="https://maps.google.com/...">
+                </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
-                            <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url', $ride->return_destination_map_url) }}" placeholder="https://maps.google.com/...">
+                <div class="mb-3">
+                    <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
+                    <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url', $ride->return_destination_map_url) }}" placeholder="https://maps.google.com/...">
                         </div>
                     </div>
                 </div>
@@ -225,4 +225,4 @@ document.addEventListener('DOMContentLoaded', function() {
     syncReturnDestination();
 });
 </script>
-@endsection
+@endsection 

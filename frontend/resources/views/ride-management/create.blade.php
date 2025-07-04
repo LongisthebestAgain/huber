@@ -13,28 +13,28 @@
             @csrf
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="station_location" class="form-label fw-semibold">Station Location</label>
                         <input type="text" class="form-control" id="station_location" name="station_location" value="{{ old('station_location') }}" required placeholder="Enter pickup station...">
                     </div>
-                </div>
+            </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="destination" class="form-label fw-semibold">Destination</label>
                         <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination') }}" required placeholder="Enter destination...">
                     </div>
-                </div>
+            </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="date" class="form-label fw-semibold">Date</label>
-                        <input type="date" class="form-control" id="date" name="date" value="{{ old('date') }}" required>
-                    </div>
+                <input type="date" class="form-control" id="date" name="date" value="{{ old('date') }}" required>
+            </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label for="time" class="form-label fw-semibold">Time</label>
-                        <input type="time" class="form-control" id="time" name="time" value="{{ old('time') }}" required>
-                    </div>
+                <input type="time" class="form-control" id="time" name="time" value="{{ old('time') }}" required>
+            </div>
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label class="form-label fw-semibold">Type</label>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="is_exclusive" id="exclusive" value="1" {{ old('is_exclusive') == '1' ? 'checked' : '' }} required onchange="togglePriceFields()">
@@ -72,29 +72,29 @@
             </div>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="station_location_map_url" name="station_location_map_url" value="{{ old('station_location_map_url') }}" placeholder="https://maps.google.com/...">
-                    </div>
+            <div class="mb-3">
+                <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
+                <input type="url" class="form-control" id="station_location_map_url" name="station_location_map_url" value="{{ old('station_location_map_url') }}" placeholder="https://maps.google.com/...">
+            </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
-                        <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url') }}" placeholder="https://maps.google.com/...">
-                    </div>
+            <div class="mb-3">
+                <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
+                <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url') }}" placeholder="https://maps.google.com/...">
+            </div>
                 </div>
             </div>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
+            <div class="mb-3">
                         <label class="form-label fw-semibold">Trip Type</label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_two_way" id="one_way" value="0" {{ old('is_two_way') == '0' ? 'checked' : '' }} required onclick="toggleReturnFields()">
-                            <label class="form-check-label" for="one_way">One Way</label>
-                        </div>
+                    <input class="form-check-input" type="radio" name="is_two_way" id="one_way" value="0" {{ old('is_two_way') == '0' ? 'checked' : '' }} required onclick="toggleReturnFields()">
+                    <label class="form-check-label" for="one_way">One Way</label>
+                </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_two_way" id="two_way" value="1" {{ old('is_two_way') == '1' ? 'checked' : '' }} required onclick="toggleReturnFields()">
-                            <label class="form-check-label" for="two_way">Two Way (Return)</label>
+                    <input class="form-check-input" type="radio" name="is_two_way" id="two_way" value="1" {{ old('is_two_way') == '1' ? 'checked' : '' }} required onclick="toggleReturnFields()">
+                    <label class="form-check-label" for="two_way">Two Way (Return)</label>
                         </div>
                     </div>
                 </div>
@@ -104,32 +104,32 @@
                 <h5 class="mb-3 text-success"><i class="fas fa-undo-alt me-2"></i>Return Trip Details</h5>
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_station_location" class="form-label fw-semibold">Return Station Location</label>
                             <input type="text" class="form-control" id="return_station_location" name="return_station_location" value="{{ old('return_station_location') }}" placeholder="Enter return pickup station...">
                         </div>
-                    </div>
+                </div>
                     <div class="col-md-6">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_destination" class="form-label fw-semibold">Return Destination</label>
                             <input type="text" class="form-control bg-light" id="return_destination_display" value="{{ old('station_location') }}" readonly>
-                            <input type="hidden" id="return_destination" name="return_destination" value="{{ old('station_location') }}">
-                        </div>
+                    <input type="hidden" id="return_destination" name="return_destination" value="{{ old('station_location') }}">
+                </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_date" class="form-label fw-semibold">Return Date</label>
-                            <input type="date" class="form-control" id="return_date" name="return_date" value="{{ old('return_date') }}">
-                        </div>
+                    <input type="date" class="form-control" id="return_date" name="return_date" value="{{ old('return_date') }}">
+                </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_time" class="form-label fw-semibold">Return Time</label>
-                            <input type="time" class="form-control" id="return_time" name="return_time" value="{{ old('return_time') }}">
-                        </div>
+                    <input type="time" class="form-control" id="return_time" name="return_time" value="{{ old('return_time') }}">
+                </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="mb-3">
+                <div class="mb-3">
                             <label for="return_available_seats" class="form-label fw-semibold">Return Available Seats</label>
                             <input type="number" class="form-control" id="return_available_seats" name="return_available_seats" min="1" value="{{ old('return_available_seats') }}">
                         </div>
@@ -137,16 +137,16 @@
                 </div>
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
-                            <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url') }}" placeholder="https://maps.google.com/...">
-                        </div>
+                <div class="mb-3">
+                    <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
+                    <input type="url" class="form-control" id="return_station_location_map_url" name="return_station_location_map_url" value="{{ old('return_station_location_map_url') }}" placeholder="https://maps.google.com/...">
+                </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
-                            <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url') }}" placeholder="https://maps.google.com/...">
-                        </div>
+                <div class="mb-3">
+                    <label for="return_destination_map_url" class="form-label">Return Destination Google Maps Link (optional)</label>
+                    <input type="url" class="form-control" id="return_destination_map_url" name="return_destination_map_url" value="{{ old('return_destination_map_url') }}" placeholder="https://maps.google.com/...">
+                </div>
                     </div>
                 </div>
                 <div class="row g-4">
@@ -159,7 +159,7 @@
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_shared" value="0" {{ old('return_is_exclusive') == '0' ? 'checked' : '' }} onchange="toggleReturnPriceFields()">
-                                <label class="form-check-label" for="return_shared">Shared</label>
+                        <label class="form-check-label" for="return_shared">Shared</label>
                             </div>
                         </div>
                     </div>
