@@ -54,6 +54,11 @@ class BookingController extends Controller
             $time = $ride->time;
         }
 
+        // Check if any seats are available
+        if ($availableSeats <= 0) {
+            return redirect()->route('find.rides')->with('error', 'Sorry, this ride is fully booked and no longer available.');
+        }
+
         return view('booking.payment', compact('ride', 'user', 'tripType', 'pricePerSeat', 'availableSeats', 'date', 'time', 'isExclusive'));
     }
 
@@ -129,6 +134,11 @@ class BookingController extends Controller
             $availableSeats = $ride->available_seats;
             $date = $ride->date;
             $time = $ride->time;
+        }
+
+        // Check if any seats are available
+        if ($availableSeats <= 0) {
+            return redirect()->route('find.rides')->with('error', 'Sorry, this ride is fully booked and no longer available.');
         }
 
         // For exclusive rides, use hidden input value or available seats

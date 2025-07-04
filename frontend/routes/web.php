@@ -60,6 +60,7 @@ Route::post('/driver/rides', [DriverRideManagementController::class, 'store'])->
 Route::get('/driver/my-rides', [DriverRideManagementController::class, 'myRides'])->name('driver.my-rides');
 Route::get('/driver/rides/{ride}/edit', [DriverRideManagementController::class, 'edit'])->name('driver.rides.edit');
 Route::put('/driver/rides/{ride}', [DriverRideManagementController::class, 'update'])->name('driver.rides.update');
+Route::get('/driver/rides/{ride}/customers/{tripType?}', [DriverRideManagementController::class, 'showRideCustomers'])->name('driver.ride.customers');
 Route::get('/find-rides', [DriverRideManagementController::class, 'findRides'])->name('find.rides');
 Route::get('/driver/earnings', [DriverRideManagementController::class, 'earnings'])->name('driver.earnings');
 

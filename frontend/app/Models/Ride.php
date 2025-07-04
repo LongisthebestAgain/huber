@@ -34,6 +34,17 @@ class Ride extends Model
         'return_exclusive_price',
     ];
 
+    protected $casts = [
+        'date' => 'date',
+        'time' => 'datetime:H:i',
+        'return_date' => 'date',
+        'return_time' => 'datetime:H:i',
+        'go_to_price_per_person' => 'decimal:2',
+        'return_price_per_person' => 'decimal:2',
+        'go_to_exclusive_price' => 'decimal:2',
+        'return_exclusive_price' => 'decimal:2',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

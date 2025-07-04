@@ -19,7 +19,28 @@ class DriverRideManagementController extends Controller
             session()->forget(['user', 'user_role']);
             return redirect()->route('login')->with('error', 'User not found. Please login again.');
         }
-        return view('ride-management.index', compact('user'));
+        
+        // Get all rides created by this driver
+        $allRides = Ride::where('user_id', $user->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+            
+        // Separate go and return rides
+        $goRides = collect();
+        $returnRides = collect();
+        
+        foreach ($allRides as $ride) {
+            // Add the main ride (go trip)
+            $goRides->push($ride);
+            
+            // If it's a two-way ride with return details, add it as a separate return ride
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time) {
+                $returnRides->push($ride);
+            }
+        }
+            
+        return view('ride-management.index', compact('user', 'goRides', 'returnRides'));
     }
 
     public function create()
@@ -288,29 +309,31 @@ class DriverRideManagementController extends Controller
         $rides = $query->get();
         $rideEntries = [];
         foreach ($rides as $ride) {
-            // Outgoing trip
-            $hasBookedGo = false;
-            if ($userId) {
-                $hasBookedGo = \App\Models\RidePurchase::where('ride_id', $ride->id)
-                    ->where('user_id', $userId)
-                    ->where('trip_type', 'go')
-                    ->exists();
+            // Outgoing trip - only add if seats are available
+            if ($ride->available_seats > 0) {
+                $hasBookedGo = false;
+                if ($userId) {
+                    $hasBookedGo = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                        ->where('user_id', $userId)
+                        ->where('trip_type', 'go')
+                        ->exists();
+                }
+                $rideEntries[] = [
+                    'type' => 'Go',
+                    'ride' => $ride,
+                    'station_location' => $ride->station_location,
+                    'destination' => $ride->destination,
+                    'date' => $ride->date,
+                    'time' => $ride->time,
+                    'available_seats' => $ride->available_seats,
+                    'is_exclusive' => $ride->is_exclusive,
+                    'price_per_person' => $ride->is_exclusive ? $ride->go_to_exclusive_price : $ride->go_to_price_per_person,
+                    'user' => $ride->user,
+                    'has_booked' => $hasBookedGo,
+                ];
             }
-            $rideEntries[] = [
-                'type' => 'Go',
-                'ride' => $ride,
-                'station_location' => $ride->station_location,
-                'destination' => $ride->destination,
-                'date' => $ride->date,
-                'time' => $ride->time,
-                'available_seats' => $ride->available_seats,
-                'is_exclusive' => $ride->is_exclusive,
-                'price_per_person' => $ride->is_exclusive ? $ride->go_to_exclusive_price : $ride->go_to_price_per_person,
-                'user' => $ride->user,
-                'has_booked' => $hasBookedGo,
-            ];
-            // Return trip (if exists)
-            if ($ride->is_two_way && $ride->return_date && $ride->return_time) {
+            // Return trip (if exists) - only add if seats are available
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time && $ride->return_available_seats > 0) {
                 $hasBookedReturn = false;
                 if ($userId) {
                     $hasBookedReturn = \App\Models\RidePurchase::where('ride_id', $ride->id)
@@ -409,5 +432,40 @@ class DriverRideManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         return view('ride-management.earnings', compact('user', 'bookings'));
+    }
+
+    public function showRideCustomers($rideId, $tripType = null)
+    {
+        $userData = session('user');
+        if (!$userData || !isset($userData['id'])) {
+            return redirect()->route('login')->with('error', 'Please login to access ride customers.');
+        }
+        $user = User::find($userData['id']);
+        if (!$user) {
+            session()->forget(['user', 'user_role']);
+            return redirect()->route('login')->with('error', 'User not found. Please login again.');
+        }
+
+        // Get the ride and verify it belongs to this driver
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$ride) {
+            return redirect()->route('driver.ride.management')->with('error', 'Ride not found or you do not have permission to view it.');
+        }
+
+        // Get all bookings for this specific ride
+        $query = \App\Models\RidePurchase::with(['user'])
+            ->where('ride_id', $rideId);
+            
+        // Filter by trip type if specified
+        if ($tripType) {
+            $query->where('trip_type', $tripType);
+        }
+        
+        $bookings = $query->orderBy('created_at', 'desc')->get();
+
+        return view('ride-management.ride-customers', compact('user', 'ride', 'bookings', 'tripType'));
     }
 } 
