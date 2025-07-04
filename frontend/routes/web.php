@@ -49,6 +49,7 @@ Route::put('/profile', [ProfileController::class, 'update'])->name('profile.upda
 // Driver-specific routes
 Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
 Route::put('/driver/vehicle-photos', [DriverProfileController::class, 'updateVehiclePhotos'])->name('driver.vehicle-photos.update');
+Route::get('/driver/profile/{driverId}', [\App\Http\Controllers\DriverProfileController::class, 'showPublic'])->name('driver.profile.public');
 
 // Ride Management for drivers
 Route::get('/driver/ride-management', [DriverRideManagementController::class, 'index'])->name('driver.ride.management');
@@ -57,6 +58,7 @@ Route::post('/driver/rides', [DriverRideManagementController::class, 'store'])->
 Route::get('/driver/my-rides', [DriverRideManagementController::class, 'myRides'])->name('driver.my-rides');
 Route::get('/driver/rides/{ride}/edit', [DriverRideManagementController::class, 'edit'])->name('driver.rides.edit');
 Route::put('/driver/rides/{ride}', [DriverRideManagementController::class, 'update'])->name('driver.rides.update');
+Route::get('/find-rides', [DriverRideManagementController::class, 'findRides'])->name('find.rides');
 
 // Password change routes
 Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');

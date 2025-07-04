@@ -29,6 +29,12 @@
                         </li>
                     @endif
                     
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('find.rides') }}">
+                            <i class="fas fa-search me-2"></i>Find Rides
+                        </a>
+                    </li>
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-2"></i>{{ Session::get('user')['first_name'] ?? 'User' }}

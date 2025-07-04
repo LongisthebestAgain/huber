@@ -168,4 +168,133 @@ class DriverRideManagementController extends Controller
         $ride->save();
         return redirect()->route('driver.my-rides')->with('success', 'Ride updated successfully!');
     }
+
+    public function findRides(Request $request)
+    {
+        $query = \App\Models\Ride::with(['user.driverDocuments']);
+
+        // Filtering
+        if ($request->filled('date')) {
+            $query->where('date', $request->input('date'));
+        }
+        if ($request->filled('price_min')) {
+            $query->where(function($q) use ($request) {
+                $q->where('go_to_price_per_person', '>=', $request->input('price_min'));
+                $q->orWhere('return_price_per_person', '>=', $request->input('price_min'));
+            });
+        }
+        if ($request->filled('price_max')) {
+            $query->where(function($q) use ($request) {
+                $q->where('go_to_price_per_person', '<=', $request->input('price_max'));
+                $q->orWhere('return_price_per_person', '<=', $request->input('price_max'));
+            });
+        }
+        if ($request->filled('departure_time')) {
+            // Simple time filtering (morning, afternoon, evening)
+            $time = $request->input('departure_time');
+            if ($time === 'morning') {
+                $query->whereBetween('time', ['05:00:00', '11:59:59']);
+            } elseif ($time === 'afternoon') {
+                $query->whereBetween('time', ['12:00:00', '17:59:59']);
+            } elseif ($time === 'evening') {
+                $query->whereBetween('time', ['18:00:00', '23:59:59']);
+            }
+        }
+        // Sorting
+        if ($request->input('sort_by') === 'price_asc') {
+            $query->orderBy('go_to_price_per_person', 'asc');
+        } elseif ($request->input('sort_by') === 'price_desc') {
+            $query->orderBy('go_to_price_per_person', 'desc');
+        } elseif ($request->input('sort_by') === 'earliest') {
+            $query->orderBy('date', 'asc')->orderBy('time', 'asc');
+        }
+
+        $rides = $query->get();
+        $rideEntries = [];
+        foreach ($rides as $ride) {
+            // Outgoing trip
+            $rideEntries[] = [
+                'type' => 'Go',
+                'ride' => $ride,
+                'station_location' => $ride->station_location,
+                'destination' => $ride->destination,
+                'date' => $ride->date,
+                'time' => $ride->time,
+                'available_seats' => $ride->available_seats,
+                'is_exclusive' => $ride->is_exclusive,
+                'price_per_person' => $ride->go_to_price_per_person,
+                'user' => $ride->user,
+            ];
+            // Return trip (if exists)
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time) {
+                $rideEntries[] = [
+                    'type' => 'Back',
+                    'ride' => $ride,
+                    'station_location' => $ride->destination,
+                    'destination' => $ride->station_location,
+                    'date' => $ride->return_date,
+                    'time' => $ride->return_time,
+                    'available_seats' => $ride->return_available_seats,
+                    'is_exclusive' => $ride->return_is_exclusive,
+                    'price_per_person' => $ride->return_price_per_person,
+                    'user' => $ride->user,
+                ];
+            }
+        }
+        // Apply rideType filter to both outgoing and return trips
+        if ($request->filled('rideType') && in_array($request->input('rideType'), ['shared', 'exclusive'])) {
+            if ($request->input('rideType') === 'exclusive') {
+                $rideEntries = array_filter($rideEntries, function($entry) {
+                    return $entry['is_exclusive'] === true || $entry['is_exclusive'] === 1;
+                });
+            } else { // shared
+                $rideEntries = array_filter($rideEntries, function($entry) {
+                    return $entry['is_exclusive'] === false || $entry['is_exclusive'] === 0 || is_null($entry['is_exclusive']);
+                });
+            }
+        }
+        // Apply price sorting after filtering
+        if (($request->input('sort_by') === 'price_asc' || $request->input('sort_by') === 'price_desc')) {
+            usort($rideEntries, function($a, $b) use ($request) {
+                $aPrice = $a['price_per_person'] ?? 0;
+                $bPrice = $b['price_per_person'] ?? 0;
+                if ($aPrice == $bPrice) return 0;
+                if ($request->input('sort_by') === 'price_asc') {
+                    return $aPrice <=> $bPrice;
+                } else {
+                    return $bPrice <=> $aPrice;
+                }
+            });
+        }
+        // Apply price range filter after building rideEntries
+        if ($request->filled('price_min')) {
+            $min = floatval($request->input('price_min'));
+            $rideEntries = array_filter($rideEntries, function($entry) use ($min) {
+                return isset($entry['price_per_person']) && $entry['price_per_person'] >= $min;
+            });
+        }
+        if ($request->filled('price_max')) {
+            $max = floatval($request->input('price_max'));
+            $rideEntries = array_filter($rideEntries, function($entry) use ($max) {
+                return isset($entry['price_per_person']) && $entry['price_per_person'] <= $max;
+            });
+        }
+        // Apply 'from' and 'to' filters to rideEntries after building
+        if ($request->filled('from')) {
+            $from = strtolower($request->input('from'));
+            $rideEntries = array_filter($rideEntries, function($entry) use ($from) {
+                return strpos(strtolower($entry['station_location']), $from) !== false;
+            });
+        }
+        if ($request->filled('to')) {
+            $to = strtolower($request->input('to'));
+            $rideEntries = array_filter($rideEntries, function($entry) use ($to) {
+                return strpos(strtolower($entry['destination']), $to) !== false;
+            });
+        }
+        return view('find-rides', [
+            'rideEntries' => $rideEntries,
+            'filters' => $request->all(),
+        ]);
+    }
 } 

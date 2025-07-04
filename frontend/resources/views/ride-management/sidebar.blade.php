@@ -1,7 +1,9 @@
 <div class="sidebar-sticky">
     @php
-        $profilePic = $user->profile_picture ?? (session('user.profile_picture') ?? null);
-        $nameParts = $user && $user->name ? explode(' ', $user->name, 2) : [session('user.first_name') ?? 'Driver', session('user.last_name') ?? ''];
+        // Make $user optional for pages that don't provide it
+        $userObj = isset($user) ? $user : null;
+        $profilePic = $userObj && isset($userObj->profile_picture) ? $userObj->profile_picture : (session('user.profile_picture') ?? null);
+        $nameParts = $userObj && isset($userObj->name) && $userObj->name ? explode(' ', $userObj->name, 2) : [session('user.first_name') ?? 'Driver', session('user.last_name') ?? ''];
         $firstName = $nameParts[0] ?? '';
         $lastName = $nameParts[1] ?? '';
     @endphp

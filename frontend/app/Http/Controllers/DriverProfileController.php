@@ -93,4 +93,11 @@ class DriverProfileController extends Controller
 
         return redirect()->back()->with('info', 'No changes were made.');
     }
+
+    public function showPublic($driverId)
+    {
+        $user = \App\Models\User::where('id', $driverId)->where('role', 'driver')->firstOrFail();
+        $driverDocuments = \App\Models\DriverDocument::where('user_id', $user->id)->first();
+        return view('driver-profile-public', compact('user', 'driverDocuments'));
+    }
 } 
