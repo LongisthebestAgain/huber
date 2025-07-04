@@ -44,8 +44,40 @@
                             <td>{{ $ride->available_seats }}</td>
                             <td>{{ $ride->is_exclusive ? 'Exclusive' : 'Shared' }}</td>
                             <td>{{ $ride->is_two_way ? 'Two Way' : 'One Way' }}</td>
-                            <td>{{ $ride->go_to_price_per_person !== null ? number_format($ride->go_to_price_per_person, 2) : '-' }}</td>
-                            <td>{{ $ride->is_two_way && $ride->return_price_per_person !== null ? number_format($ride->return_price_per_person, 2) : '-' }}</td>
+                            <td>
+                                @if($ride->is_exclusive)
+                                    @if($ride->go_to_exclusive_price !== null)
+                                        ${{ number_format($ride->go_to_exclusive_price, 2) }} (Total)
+                                    @else
+                                        -
+                                    @endif
+                                @else
+                                    @if($ride->go_to_price_per_person !== null)
+                                        ${{ number_format($ride->go_to_price_per_person, 2) }}/person
+                                    @else
+                                        -
+                                    @endif
+                                @endif
+                            </td>
+                            <td>
+                                @if($ride->is_two_way)
+                                    @if($ride->return_is_exclusive)
+                                        @if($ride->return_exclusive_price !== null)
+                                            ${{ number_format($ride->return_exclusive_price, 2) }} (Total)
+                                        @else
+                                            -
+                                        @endif
+                                    @else
+                                        @if($ride->return_price_per_person !== null)
+                                            ${{ number_format($ride->return_price_per_person, 2) }}/person
+                                        @else
+                                            -
+                                        @endif
+                                    @endif
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td>
                                 @if($ride->is_two_way)
                                     <div><b>From:</b> {{ $ride->return_station_location }}</div>

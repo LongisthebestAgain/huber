@@ -26,11 +26,26 @@
             </div>
             <div class="mb-3">
                 <label for="available_seats" class="form-label">Available Seats</label>
-                <input type="number" class="form-control" id="available_seats" name="available_seats" min="1" max="20" value="{{ old('available_seats') }}" required>
+                <input type="number" class="form-control" id="available_seats" name="available_seats" min="1" value="{{ old('available_seats') }}" required>
             </div>
-            <div class="mb-3" id="go-to-price-field">
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_exclusive" id="exclusive" value="1" {{ old('is_exclusive') == '1' ? 'checked' : '' }} required onchange="togglePriceFields()">
+                    <label class="form-check-label" for="exclusive">Exclusive</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_exclusive" id="shared" value="0" {{ old('is_exclusive') == '0' ? 'checked' : '' }} required onchange="togglePriceFields()">
+                    <label class="form-check-label" for="shared">Shared</label>
+                </div>
+            </div>
+            <div class="mb-3" id="go-to-price-per-person-field" style="display: none;">
                 <label for="go_to_price_per_person" class="form-label">Go To Price Per Person</label>
                 <input type="number" step="0.01" min="0" class="form-control" id="go_to_price_per_person" name="go_to_price_per_person" value="{{ old('go_to_price_per_person') }}">
+            </div>
+            <div class="mb-3" id="go-to-exclusive-price-field" style="display: none;">
+                <label for="go_to_exclusive_price" class="form-label">Go To Exclusive Price (Total)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="go_to_exclusive_price" name="go_to_exclusive_price" value="{{ old('go_to_exclusive_price') }}">
             </div>
             <div class="mb-3">
                 <label for="station_location_map_url" class="form-label">Station Location Google Maps Link (optional)</label>
@@ -39,17 +54,6 @@
             <div class="mb-3">
                 <label for="destination_map_url" class="form-label">Destination Google Maps Link (optional)</label>
                 <input type="url" class="form-control" id="destination_map_url" name="destination_map_url" value="{{ old('destination_map_url') }}" placeholder="https://maps.google.com/...">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Type</label>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_exclusive" id="exclusive" value="1" {{ old('is_exclusive') == '1' ? 'checked' : '' }} required>
-                    <label class="form-check-label" for="exclusive">Exclusive</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_exclusive" id="shared" value="0" {{ old('is_exclusive') == '0' ? 'checked' : '' }} required>
-                    <label class="form-check-label" for="shared">Shared</label>
-                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Trip Type</label>
@@ -84,7 +88,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="return_available_seats" class="form-label">Return Available Seats</label>
-                    <input type="number" class="form-control" id="return_available_seats" name="return_available_seats" min="1" max="20" value="{{ old('return_available_seats') }}">
+                    <input type="number" class="form-control" id="return_available_seats" name="return_available_seats" min="1" value="{{ old('return_available_seats') }}">
                 </div>
                 <div class="mb-3">
                     <label for="return_station_location_map_url" class="form-label">Return Station Location Google Maps Link (optional)</label>
@@ -97,17 +101,21 @@
                 <div class="mb-3">
                     <label class="form-label">Return Type</label>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_exclusive" value="1" {{ old('return_is_exclusive') == '1' ? 'checked' : '' }}>
+                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_exclusive" value="1" {{ old('return_is_exclusive') == '1' ? 'checked' : '' }} onchange="toggleReturnPriceFields()">
                         <label class="form-check-label" for="return_exclusive">Exclusive</label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_shared" value="0" {{ old('return_is_exclusive') == '0' ? 'checked' : '' }}>
+                        <input class="form-check-input" type="radio" name="return_is_exclusive" id="return_shared" value="0" {{ old('return_is_exclusive') == '0' ? 'checked' : '' }} onchange="toggleReturnPriceFields()">
                         <label class="form-check-label" for="return_shared">Shared</label>
                     </div>
                 </div>
-                <div class="mb-3" id="return-price-field" style="display: none;">
+                <div class="mb-3" id="return-price-per-person-field" style="display: none;">
                     <label for="return_price_per_person" class="form-label">Return Price Per Person</label>
                     <input type="number" step="0.01" min="0" class="form-control" id="return_price_per_person" name="return_price_per_person" value="{{ old('return_price_per_person') }}">
+                </div>
+                <div class="mb-3" id="return-exclusive-price-field" style="display: none;">
+                    <label for="return_exclusive_price" class="form-label">Return Exclusive Price (Total)</label>
+                    <input type="number" step="0.01" min="0" class="form-control" id="return_exclusive_price" name="return_exclusive_price" value="{{ old('return_exclusive_price') }}">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary mt-3">Create Ride</button>
@@ -121,12 +129,23 @@
 function toggleReturnFields() {
     var twoWay = document.getElementById('two_way').checked;
     document.getElementById('return-fields').style.display = twoWay ? 'block' : 'none';
-    document.getElementById('return-price-field').style.display = twoWay ? 'block' : 'none';
+    document.getElementById('return-price-per-person-field').style.display = twoWay ? 'block' : 'none';
+    document.getElementById('return-exclusive-price-field').style.display = twoWay ? 'block' : 'none';
 }
 function syncReturnDestination() {
     var station = document.getElementById('station_location').value;
     document.getElementById('return_destination_display').value = station;
     document.getElementById('return_destination').value = station;
+}
+function togglePriceFields() {
+    var exclusive = document.getElementById('exclusive').checked;
+    document.getElementById('go-to-price-per-person-field').style.display = exclusive ? 'none' : 'block';
+    document.getElementById('go-to-exclusive-price-field').style.display = exclusive ? 'block' : 'none';
+}
+function toggleReturnPriceFields() {
+    var returnExclusive = document.getElementById('return_exclusive').checked;
+    document.getElementById('return-price-per-person-field').style.display = returnExclusive ? 'none' : 'block';
+    document.getElementById('return-exclusive-price-field').style.display = returnExclusive ? 'block' : 'none';
 }
 document.addEventListener('DOMContentLoaded', function() {
     toggleReturnFields();
@@ -134,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('two_way').addEventListener('change', toggleReturnFields);
     document.getElementById('station_location').addEventListener('input', syncReturnDestination);
     syncReturnDestination();
+    togglePriceFields();
 });
 </script>
 @endsection 

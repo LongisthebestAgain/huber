@@ -30,10 +30,17 @@ class Ride extends Model
         'return_destination_map_url',
         'go_to_price_per_person',
         'return_price_per_person',
+        'go_to_exclusive_price',
+        'return_exclusive_price',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function ridePurchases()
+    {
+        return $this->hasMany(RidePurchase::class);
     }
 } 

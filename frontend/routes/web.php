@@ -9,6 +9,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\DriverRideManagementController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\UserBookingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,13 +62,22 @@ Route::get('/driver/rides/{ride}/edit', [DriverRideManagementController::class, 
 Route::put('/driver/rides/{ride}', [DriverRideManagementController::class, 'update'])->name('driver.rides.update');
 Route::get('/find-rides', [DriverRideManagementController::class, 'findRides'])->name('find.rides');
 
+// Booking routes
+Route::get('/booking/payment/{rideId}/{tripType?}', [BookingController::class, 'showPaymentPage'])->name('booking.payment');
+Route::post('/booking/process/{rideId}/{tripType?}', [BookingController::class, 'processBooking'])->name('booking.process');
+Route::get('/booking/thank-you/{bookingId}', [BookingController::class, 'showThankYou'])->name('booking.thank-you');
+Route::get('/booking/confirmation/{bookingId}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
+
+// User booking routes
+Route::get('/user/bookings', [UserBookingController::class, 'index'])->name('user.bookings');
+Route::get('/user/bookings/{bookingId}', [UserBookingController::class, 'show'])->name('user.booking.details');
+
 // Password change routes
 Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');
 Route::put('/password/change', [PasswordChangeController::class, 'update'])->name('password.change.submit');
 
 // Stubs for navbar links
 Route::get('/rides', function () { return 'Available Rides'; })->name('rides');
-Route::get('/user/bookings', function () { return 'User Bookings'; })->name('user.bookings');
 Route::get('/user/history', function () { return 'User History'; })->name('user.history');
 
 Route::middleware(['web'])->group(function () {

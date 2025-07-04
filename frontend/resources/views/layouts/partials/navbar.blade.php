@@ -35,6 +35,12 @@
                         </a>
                     </li>
                     
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('user.bookings') }}">
+                            <i class="fas fa-list me-2"></i>My Bookings
+                        </a>
+                    </li>
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-2"></i>{{ Session::get('user')['first_name'] ?? 'User' }}

@@ -67,16 +67,51 @@ class DriverRideManagementController extends Controller
             'destination_map_url' => 'nullable|url|max:255',
             'return_station_location_map_url' => 'nullable|url|max:255',
             'return_destination_map_url' => 'nullable|url|max:255',
-            'go_to_price_per_person' => 'required|numeric|min:0',
+            // Price fields - conditional based on ride type
+            'go_to_price_per_person' => 'nullable|numeric|min:0',
+            'go_to_exclusive_price' => 'nullable|numeric|min:0',
             'return_price_per_person' => 'nullable|numeric|min:0',
+            'return_exclusive_price' => 'nullable|numeric|min:0',
         ]);
-        if (!$request->is_two_way) {
-            $validated['return_price_per_person'] = null;
+
+        // Validate price fields based on ride type
+        if ($request->is_exclusive) {
+            $request->validate([
+                'go_to_exclusive_price' => 'required|numeric|min:0',
+            ], [
+                'go_to_exclusive_price.required' => 'Exclusive price is required for exclusive rides.',
+            ]);
+            $validated['go_to_price_per_person'] = null;
         } else {
             $request->validate([
-                'return_price_per_person' => 'required|numeric|min:0',
+                'go_to_price_per_person' => 'required|numeric|min:0',
+            ], [
+                'go_to_price_per_person.required' => 'Price per person is required for shared rides.',
             ]);
+            $validated['go_to_exclusive_price'] = null;
         }
+
+        if ($request->is_two_way) {
+            if ($request->return_is_exclusive) {
+                $request->validate([
+                    'return_exclusive_price' => 'required|numeric|min:0',
+                ], [
+                    'return_exclusive_price.required' => 'Return exclusive price is required for exclusive return rides.',
+                ]);
+                $validated['return_price_per_person'] = null;
+            } else {
+                $request->validate([
+                    'return_price_per_person' => 'required|numeric|min:0',
+                ], [
+                    'return_price_per_person.required' => 'Return price per person is required for shared return rides.',
+                ]);
+                $validated['return_exclusive_price'] = null;
+            }
+        } else {
+            $validated['return_price_per_person'] = null;
+            $validated['return_exclusive_price'] = null;
+        }
+
         // Always set return_destination to station_location
         $validated['return_destination'] = $validated['station_location'];
         $ride = new \App\Models\Ride($validated);
@@ -152,16 +187,51 @@ class DriverRideManagementController extends Controller
             'destination_map_url' => 'nullable|url|max:255',
             'return_station_location_map_url' => 'nullable|url|max:255',
             'return_destination_map_url' => 'nullable|url|max:255',
-            'go_to_price_per_person' => 'required|numeric|min:0',
+            // Price fields - conditional based on ride type
+            'go_to_price_per_person' => 'nullable|numeric|min:0',
+            'go_to_exclusive_price' => 'nullable|numeric|min:0',
             'return_price_per_person' => 'nullable|numeric|min:0',
+            'return_exclusive_price' => 'nullable|numeric|min:0',
         ]);
-        if (!$request->is_two_way) {
-            $validated['return_price_per_person'] = null;
+
+        // Validate price fields based on ride type
+        if ($request->is_exclusive) {
+            $request->validate([
+                'go_to_exclusive_price' => 'required|numeric|min:0',
+            ], [
+                'go_to_exclusive_price.required' => 'Exclusive price is required for exclusive rides.',
+            ]);
+            $validated['go_to_price_per_person'] = null;
         } else {
             $request->validate([
-                'return_price_per_person' => 'required|numeric|min:0',
+                'go_to_price_per_person' => 'required|numeric|min:0',
+            ], [
+                'go_to_price_per_person.required' => 'Price per person is required for shared rides.',
             ]);
+            $validated['go_to_exclusive_price'] = null;
         }
+
+        if ($request->is_two_way) {
+            if ($request->return_is_exclusive) {
+                $request->validate([
+                    'return_exclusive_price' => 'required|numeric|min:0',
+                ], [
+                    'return_exclusive_price.required' => 'Return exclusive price is required for exclusive return rides.',
+                ]);
+                $validated['return_price_per_person'] = null;
+            } else {
+                $request->validate([
+                    'return_price_per_person' => 'required|numeric|min:0',
+                ], [
+                    'return_price_per_person.required' => 'Return price per person is required for shared return rides.',
+                ]);
+                $validated['return_exclusive_price'] = null;
+            }
+        } else {
+            $validated['return_price_per_person'] = null;
+            $validated['return_exclusive_price'] = null;
+        }
+
         // Always set return_destination to station_location
         $validated['return_destination'] = $validated['station_location'];
         $ride->update($validated);
@@ -179,14 +249,18 @@ class DriverRideManagementController extends Controller
         }
         if ($request->filled('price_min')) {
             $query->where(function($q) use ($request) {
-                $q->where('go_to_price_per_person', '>=', $request->input('price_min'));
-                $q->orWhere('return_price_per_person', '>=', $request->input('price_min'));
+                $q->where('go_to_price_per_person', '>=', $request->input('price_min'))
+                  ->orWhere('go_to_exclusive_price', '>=', $request->input('price_min'))
+                  ->orWhere('return_price_per_person', '>=', $request->input('price_min'))
+                  ->orWhere('return_exclusive_price', '>=', $request->input('price_min'));
             });
         }
         if ($request->filled('price_max')) {
             $query->where(function($q) use ($request) {
-                $q->where('go_to_price_per_person', '<=', $request->input('price_max'));
-                $q->orWhere('return_price_per_person', '<=', $request->input('price_max'));
+                $q->where('go_to_price_per_person', '<=', $request->input('price_max'))
+                  ->orWhere('go_to_exclusive_price', '<=', $request->input('price_max'))
+                  ->orWhere('return_price_per_person', '<=', $request->input('price_max'))
+                  ->orWhere('return_exclusive_price', '<=', $request->input('price_max'));
             });
         }
         if ($request->filled('departure_time')) {
@@ -222,7 +296,7 @@ class DriverRideManagementController extends Controller
                 'time' => $ride->time,
                 'available_seats' => $ride->available_seats,
                 'is_exclusive' => $ride->is_exclusive,
-                'price_per_person' => $ride->go_to_price_per_person,
+                'price_per_person' => $ride->is_exclusive ? $ride->go_to_exclusive_price : $ride->go_to_price_per_person,
                 'user' => $ride->user,
             ];
             // Return trip (if exists)
@@ -236,7 +310,7 @@ class DriverRideManagementController extends Controller
                     'time' => $ride->return_time,
                     'available_seats' => $ride->return_available_seats,
                     'is_exclusive' => $ride->return_is_exclusive,
-                    'price_per_person' => $ride->return_price_per_person,
+                    'price_per_person' => $ride->return_is_exclusive ? $ride->return_exclusive_price : $ride->return_price_per_person,
                     'user' => $ride->user,
                 ];
             }

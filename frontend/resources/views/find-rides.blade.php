@@ -127,10 +127,27 @@
                                 <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
                                     <span class="badge bg-light text-dark border px-3 py-2"><i class="fas fa-car me-1"></i> {{ $entry['user'] && $entry['user']->vehicle_model ? $entry['user']->vehicle_model : 'Car Model' }} ({{ $entry['user'] && $entry['user']->vehicle_color ? $entry['user']->vehicle_color : 'Color' }})</span>
                                     <span class="badge bg-light text-dark border px-3 py-2"><i class="fas fa-users me-1"></i> {{ $entry['available_seats'] }} seats available</span>
-                                    <span class="badge bg-light text-dark border px-3 py-2"><i class="fas fa-dollar-sign me-1"></i> <span class="fw-bold">${{ $entry['price_per_person'] }}</span></span>
+                                    <span class="badge bg-light text-dark border px-3 py-2">
+                                        <i class="fas fa-dollar-sign me-1"></i> 
+                                        <span class="fw-bold">
+                                            @if($entry['is_exclusive'])
+                                                ${{ number_format($entry['price_per_person'], 2) }} (Total)
+                                            @else
+                                                ${{ number_format($entry['price_per_person'], 2) }}/person
+                                            @endif
+                                        </span>
+                                    </span>
                                 </div>
                                 <div class="d-flex justify-content-end">
-                                    <a href="#" class="btn btn-primary px-4 py-2">Book Now</a>
+                                    @if($entry['is_exclusive'])
+                                        <a href="{{ route('booking.payment', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
+                                            <i class="fas fa-credit-card me-2"></i>Book Now
+                                        </a>
+                                    @else
+                                        <a href="#" class="btn btn-outline-primary px-4 py-2">
+                                            <i class="fas fa-info-circle me-2"></i>Request Booking
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
