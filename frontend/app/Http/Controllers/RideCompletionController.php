@@ -253,4 +253,46 @@ class RideCompletionController extends Controller
 
         return view('ride-management.reviews', compact('ride'));
     }
+
+    /**
+     * View all reviews for a driver (all rides)
+     */
+    public function viewAllReviews()
+    {
+        $userData = session('user');
+        if (!$userData || !isset($userData['id'])) {
+            return redirect()->route('login')->with('error', 'Please login to view reviews.');
+        }
+
+        $user = User::find($userData['id']);
+        if (!$user) {
+            session()->forget(['user', 'user_role']);
+            return redirect()->route('login')->with('error', 'User not found. Please login again.');
+        }
+
+        // Get all reviews for rides owned by this driver
+        $reviews = RideReview::with(['ride', 'user', 'ridePurchase'])
+            ->whereHas('ride', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $totalReviews = $reviews->count();
+        $averageOverallRating = $totalReviews > 0 ? $reviews->avg('overall_rating') : 0;
+        $averageDriverRating = $totalReviews > 0 ? $reviews->avg('driver_rating') : 0;
+        $averageVehicleRating = $totalReviews > 0 ? $reviews->avg('vehicle_rating') : 0;
+        $averagePunctualityRating = $totalReviews > 0 ? $reviews->avg('punctuality_rating') : 0;
+        $averageSafetyRating = $totalReviews > 0 ? $reviews->avg('safety_rating') : 0;
+        $averageComfortRating = $totalReviews > 0 ? $reviews->avg('comfort_rating') : 0;
+
+        // Rating distribution
+        $ratingDistribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $ratingDistribution[$i] = $reviews->where('overall_rating', $i)->count();
+        }
+
+        return view('ride-management.all-reviews', compact('user', 'reviews', 'totalReviews', 'averageOverallRating', 'averageDriverRating', 'averageVehicleRating', 'averagePunctualityRating', 'averageSafetyRating', 'averageComfortRating', 'ratingDistribution'));
+    }
 }

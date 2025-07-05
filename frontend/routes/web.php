@@ -90,6 +90,7 @@ Route::post('/driver/rides/{rideId}/complete/{tripType?}', [RideCompletionContro
 Route::get('/user/bookings/{bookingId}/review/{tripType?}', [RideCompletionController::class, 'showReviewForm'])->name('user.booking.review');
 Route::post('/user/bookings/{bookingId}/review/{tripType?}', [RideCompletionController::class, 'submitReview'])->name('user.booking.review.submit');
 Route::get('/driver/rides/{rideId}/reviews', [RideCompletionController::class, 'viewRideReviews'])->name('driver.ride.reviews');
+Route::get('/driver/reviews', [RideCompletionController::class, 'viewAllReviews'])->name('driver.reviews');
 
 // Password change routes
 Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');

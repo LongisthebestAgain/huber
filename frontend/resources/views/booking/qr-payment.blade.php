@@ -41,8 +41,16 @@
                             
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-muted">Selected Seats</label>
-                                <div class="fw-semibold text-success">{{ $bookingData['number_of_seats'] }} seat(s)</div>
-                                <small class="text-muted">Seats: {{ implode(', ', $bookingData['selected_seats']) }}</small>
+                                @php
+                                    $isExclusive = ($tripType === 'return' && $ride->is_two_way) ? $ride->return_is_exclusive : $ride->is_exclusive;
+                                @endphp
+                                @if($isExclusive)
+                                    <div class="fw-semibold text-success">Exclusive Ride</div>
+                                    <small class="text-muted">Entire vehicle reserved</small>
+                                @else
+                                    <div class="fw-semibold text-success">{{ $bookingData['number_of_seats'] }} seat(s)</div>
+                                    <small class="text-muted">Seats: {{ implode(', ', $bookingData['selected_seats']) }}</small>
+                                @endif
                             </div>
                             
                             <div class="mb-3">
@@ -104,10 +112,17 @@
 
                             <!-- Back Button -->
                             <div class="mt-4">
-                                <a href="{{ route('payment.show', ['rideId' => $ride->id, 'tripType' => $tripType]) }}" 
-                                   class="btn btn-outline-primary">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Payment Methods
-                                </a>
+                                @if($isExclusive)
+                                    <a href="{{ route('find.rides') }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Find Rides
+                                    </a>
+                                @else
+                                    <a href="{{ route('payment.show', ['rideId' => $ride->id, 'tripType' => $tripType]) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Payment Methods
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>

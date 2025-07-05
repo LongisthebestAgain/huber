@@ -61,7 +61,27 @@ class BookingController extends Controller
 
         // For exclusive rides, go directly to payment
         if ($isExclusive) {
-            return view('booking.payment', compact('ride', 'user', 'tripType', 'pricePerSeat', 'availableSeats', 'date', 'time', 'isExclusive'));
+            // Create booking data for exclusive rides
+            $bookingData = [
+                'number_of_seats' => 1,
+                'selected_seats' => [1],
+                'passenger_names' => [$user->name],
+                'passenger_details' => [
+                    [
+                        'name' => $user->name,
+                        'seat_number' => 1,
+                        'phone' => $user->phone
+                    ]
+                ],
+                'contact_phone' => $user->phone,
+                'special_requests' => ''
+            ];
+            
+            // Store booking data in session
+            session(['pending_booking_data' => $bookingData]);
+            
+            // Redirect to payment controller
+            return redirect()->route('payment.show', ['rideId' => $rideId, 'tripType' => $tripType]);
         }
 
         // For shared rides, redirect to seat selection

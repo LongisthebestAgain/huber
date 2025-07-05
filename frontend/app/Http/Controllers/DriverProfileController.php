@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\DriverDocument;
 
@@ -98,6 +99,88 @@ class DriverProfileController extends Controller
     {
         $user = \App\Models\User::where('id', $driverId)->where('role', 'driver')->firstOrFail();
         $driverDocuments = \App\Models\DriverDocument::where('user_id', $user->id)->first();
-        return view('driver-profile-public', compact('user', 'driverDocuments'));
+        
+        // Get all reviews for this driver
+        $reviews = \App\Models\RideReview::with(['ride', 'user', 'ridePurchase'])
+            ->whereHas('ride', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $totalReviews = $reviews->count();
+        $averageOverallRating = $totalReviews > 0 ? $reviews->avg('overall_rating') : 0;
+        $averageDriverRating = $totalReviews > 0 ? $reviews->avg('driver_rating') : 0;
+        $averageVehicleRating = $totalReviews > 0 ? $reviews->avg('vehicle_rating') : 0;
+
+        // Rating distribution
+        $ratingDistribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $ratingDistribution[$i] = $reviews->where('overall_rating', $i)->count();
+        }
+
+        // Get previous rides (completed)
+        $previousRides = \App\Models\Ride::where('user_id', $user->id)
+            ->where(function($q) {
+                $q->where('go_completion_status', 'completed')
+                  ->orWhere('return_completion_status', 'completed');
+            })
+            ->orderBy('date', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get available rides (pending only)
+        $availableRides = \App\Models\Ride::where('user_id', $user->id)
+            ->where('go_completion_status', 'pending')
+            ->get();
+
+        // Filter the rides based on availability
+        $filteredAvailableRides = $availableRides->filter(function($ride) {
+            if ($ride->is_exclusive) {
+                // For exclusive rides, check if no bookings exist
+                $hasBookings = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                    ->where('trip_type', 'go')
+                    ->exists();
+                return !$hasBookings;
+            } else {
+                // For shared rides, check if seats are available
+                return $ride->available_seats > 0;
+            }
+        })->take(10);
+
+        // Get available return rides (pending only)
+        $availableReturnRides = \App\Models\Ride::where('user_id', $user->id)
+            ->where('is_two_way', true)
+            ->where('return_completion_status', 'pending')
+            ->get();
+
+        // Filter return rides
+        $filteredReturnRides = $availableReturnRides->filter(function($ride) {
+            if ($ride->return_is_exclusive) {
+                // For exclusive return rides, check if no bookings exist
+                $hasBookings = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                    ->where('trip_type', 'return')
+                    ->exists();
+                return !$hasBookings;
+            } else {
+                // For shared return rides, check if seats are available
+                return $ride->return_available_seats > 0;
+            }
+        })->take(5);
+
+        return view('driver-profile-public', compact(
+            'user', 
+            'driverDocuments', 
+            'reviews', 
+            'totalReviews', 
+            'averageOverallRating', 
+            'averageDriverRating', 
+            'averageVehicleRating', 
+            'ratingDistribution',
+            'previousRides',
+            'filteredAvailableRides',
+            'filteredReturnRides'
+        ));
     }
 } 

@@ -33,7 +33,7 @@
             <a class="nav-link {{ request()->routeIs('driver.earnings') ? 'active bg-primary text-white rounded' : 'text-dark' }}" href="{{ route('driver.earnings') }}"><i class="fas fa-chart-line me-2"></i>Earnings</a>
         </li>
         <li class="nav-item mb-2">
-            <a class="nav-link text-dark" href="#"><i class="fas fa-star me-2"></i>Reviews</a>
+            <a class="nav-link {{ request()->routeIs('driver.reviews') ? 'active bg-primary text-white rounded' : 'text-dark' }}" href="{{ route('driver.reviews') }}"><i class="fas fa-star me-2"></i>Reviews</a>
         </li>
         <li class="nav-item mb-2">
             <a class="nav-link text-dark" href="{{ route('driver.profile') }}"><i class="fas fa-user-cog me-2"></i>Profile</a>

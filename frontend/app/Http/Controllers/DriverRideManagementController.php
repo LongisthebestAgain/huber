@@ -309,8 +309,22 @@ class DriverRideManagementController extends Controller
         $rides = $query->get();
         $rideEntries = [];
         foreach ($rides as $ride) {
-            // Outgoing trip - only add if seats are available AND ride is still pending
-            if ($ride->available_seats > 0 && $ride->go_completion_status === 'pending') {
+            // Outgoing trip - check availability based on ride type
+            $isGoAvailable = false;
+            if ($ride->go_completion_status === 'pending') {
+                if ($ride->is_exclusive) {
+                    // For exclusive rides, check if no bookings exist
+                    $hasGoBookings = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                        ->where('trip_type', 'go')
+                        ->exists();
+                    $isGoAvailable = !$hasGoBookings;
+                } else {
+                    // For shared rides, check if seats are available
+                    $isGoAvailable = $ride->available_seats > 0;
+                }
+            }
+            
+            if ($isGoAvailable) {
                 $hasBookedGo = false;
                 if ($userId) {
                     $hasBookedGo = \App\Models\RidePurchase::where('ride_id', $ride->id)
@@ -318,22 +332,37 @@ class DriverRideManagementController extends Controller
                         ->where('trip_type', 'go')
                         ->exists();
                 }
-                $rideEntries[] = [
-                    'type' => 'Go',
-                    'ride' => $ride,
-                    'station_location' => $ride->station_location,
-                    'destination' => $ride->destination,
-                    'date' => $ride->date,
-                    'time' => $ride->time,
-                    'available_seats' => $ride->available_seats,
-                    'is_exclusive' => $ride->is_exclusive,
+            $rideEntries[] = [
+                'type' => 'Go',
+                'ride' => $ride,
+                'station_location' => $ride->station_location,
+                'destination' => $ride->destination,
+                'date' => $ride->date,
+                'time' => $ride->time,
+                    'available_seats' => $ride->is_exclusive ? 1 : $ride->available_seats,
+                'is_exclusive' => $ride->is_exclusive,
                     'price_per_person' => $ride->is_exclusive ? $ride->go_to_exclusive_price : $ride->go_to_price_per_person,
-                    'user' => $ride->user,
+                'user' => $ride->user,
                     'has_booked' => $hasBookedGo,
-                ];
+            ];
             }
-            // Return trip (if exists) - only add if seats are available AND return ride is still pending
-            if ($ride->is_two_way && $ride->return_date && $ride->return_time && $ride->return_available_seats > 0 && $ride->return_completion_status === 'pending') {
+            
+            // Return trip (if exists) - check availability based on ride type
+            $isReturnAvailable = false;
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time && $ride->return_completion_status === 'pending') {
+                if ($ride->return_is_exclusive) {
+                    // For exclusive return rides, check if no bookings exist
+                    $hasReturnBookings = \App\Models\RidePurchase::where('ride_id', $ride->id)
+                        ->where('trip_type', 'return')
+                        ->exists();
+                    $isReturnAvailable = !$hasReturnBookings;
+                } else {
+                    // For shared return rides, check if seats are available
+                    $isReturnAvailable = $ride->return_available_seats > 0;
+                }
+            }
+            
+            if ($isReturnAvailable) {
                 $hasBookedReturn = false;
                 if ($userId) {
                     $hasBookedReturn = \App\Models\RidePurchase::where('ride_id', $ride->id)
@@ -348,7 +377,7 @@ class DriverRideManagementController extends Controller
                     'destination' => $ride->station_location,
                     'date' => $ride->return_date,
                     'time' => $ride->return_time,
-                    'available_seats' => $ride->return_available_seats,
+                    'available_seats' => $ride->return_is_exclusive ? 1 : $ride->return_available_seats,
                     'is_exclusive' => $ride->return_is_exclusive,
                     'price_per_person' => $ride->return_is_exclusive ? $ride->return_exclusive_price : $ride->return_price_per_person,
                     'user' => $ride->user,
@@ -424,6 +453,7 @@ class DriverRideManagementController extends Controller
             session()->forget(['user', 'user_role']);
             return redirect()->route('login')->with('error', 'User not found. Please login again.');
         }
+        
         // Get all bookings for rides owned by this driver
         $bookings = \App\Models\RidePurchase::with(['ride', 'user'])
             ->whereHas('ride', function($q) use ($user) {
@@ -431,7 +461,30 @@ class DriverRideManagementController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('ride-management.earnings', compact('user', 'bookings'));
+
+        // Calculate statistics
+        $totalEarnings = $bookings->sum('total_price');
+        $totalCustomers = $bookings->unique('user_id')->count();
+        
+        // Count completed rides (both go and return trips)
+        $completedRides = \App\Models\Ride::where('user_id', $user->id)
+            ->where(function($q) {
+                $q->where('go_completion_status', 'completed')
+                  ->orWhere('return_completion_status', 'completed');
+            })
+            ->get();
+        
+        $totalRidesCompleted = 0;
+        foreach ($completedRides as $ride) {
+            if ($ride->go_completion_status === 'completed') {
+                $totalRidesCompleted++;
+            }
+            if ($ride->return_completion_status === 'completed') {
+                $totalRidesCompleted++;
+            }
+        }
+
+        return view('ride-management.earnings', compact('user', 'bookings', 'totalEarnings', 'totalCustomers', 'totalRidesCompleted'));
     }
 
     public function showRideCustomers($rideId, $tripType = null)

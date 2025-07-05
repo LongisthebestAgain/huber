@@ -126,7 +126,14 @@
                                 </div>
                                 <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
                                     <span class="badge bg-light text-dark border px-3 py-2"><i class="fas fa-car me-1"></i> {{ $entry['user'] && $entry['user']->vehicle_model ? $entry['user']->vehicle_model : 'Car Model' }} ({{ $entry['user'] && $entry['user']->vehicle_color ? $entry['user']->vehicle_color : 'Color' }})</span>
-                                    <span class="badge bg-light text-dark border px-3 py-2"><i class="fas fa-users me-1"></i> {{ $entry['available_seats'] }} seats available</span>
+                                    <span class="badge bg-light text-dark border px-3 py-2">
+                                        <i class="fas fa-users me-1"></i> 
+                                        @if($entry['is_exclusive'])
+                                            Exclusive
+                                        @else
+                                            {{ $entry['available_seats'] }} seats available
+                                        @endif
+                                    </span>
                                     <span class="badge bg-light text-dark border px-3 py-2">
                                         <i class="fas fa-dollar-sign me-1"></i> 
                                         <span class="fw-bold">
@@ -145,7 +152,7 @@
                                                 <i class="fas fa-check me-2"></i>Booked
                                             </button>
                                         @else
-                                            <a href="{{ route('booking.payment', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
+                                            <a href="{{ route('payment.show', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
                                                 <i class="fas fa-credit-card me-2"></i>Book Now
                                             </a>
                                         @endif

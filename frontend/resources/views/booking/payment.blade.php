@@ -3,6 +3,10 @@
 @section('title', 'Complete Payment - Book Your Ride')
 
 @section('content')
+@php
+    $isExclusive = ($tripType === 'return' && $ride->is_two_way) ? $ride->return_is_exclusive : $ride->is_exclusive;
+    $totalPrice = $isExclusive ? $pricePerSeat : ($pricePerSeat * ($bookingData['number_of_seats'] ?? 1));
+@endphp
 <div class="container-fluid bg-light min-vh-100 py-4">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
@@ -41,15 +45,24 @@
                             
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-muted">Selected Seats</label>
-                                <div class="fw-semibold text-success">{{ $bookingData['number_of_seats'] }} seat(s)</div>
-                                <small class="text-muted">Seats: {{ implode(', ', $bookingData['selected_seats']) }}</small>
+                                @if($isExclusive)
+                                    <div class="fw-semibold text-success">Exclusive Ride</div>
+                                    <small class="text-muted">Entire vehicle reserved</small>
+                                @else
+                                    <div class="fw-semibold text-success">{{ $bookingData['number_of_seats'] }} seat(s)</div>
+                                    <small class="text-muted">Seats: {{ implode(', ', $bookingData['selected_seats']) }}</small>
+                                @endif
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-muted">Passengers</label>
-                                @foreach($bookingData['passenger_names'] as $index => $name)
-                                    <div class="small text-muted">{{ $index + 1 }}. {{ $name }}</div>
-                                @endforeach
+                                @if(isset($bookingData) && isset($bookingData['passenger_names']))
+                                    @foreach($bookingData['passenger_names'] as $index => $name)
+                                        <div class="small text-muted">{{ $index + 1 }}. {{ $name }}</div>
+                                    @endforeach
+                                @else
+                                    <div class="small text-muted">1. {{ $user->name }}</div>
+                                @endif
                             </div>
                             
                             <div class="mb-3">
@@ -59,7 +72,7 @@
                             
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Total Amount:</strong> ${{ number_format($pricePerSeat * $bookingData['number_of_seats'], 2) }}
+                                <strong>Total Amount:</strong> ${{ number_format($totalPrice, 2) }}
                             </div>
                         </div>
                     </div>
@@ -192,12 +205,19 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex justify-content-between mt-4">
-                                    <a href="{{ route('booking.seat-selection', ['rideId' => $ride->id, 'tripType' => $tripType]) }}" 
-                                       class="btn btn-outline-secondary btn-lg">
-                                        <i class="fas fa-arrow-left me-2"></i>Back to Seat Selection
-                                    </a>
+                                    @if($isExclusive)
+                                        <a href="{{ route('find.rides') }}" 
+                                           class="btn btn-outline-secondary btn-lg">
+                                            <i class="fas fa-arrow-left me-2"></i>Back to Find Rides
+                                        </a>
+                                    @else
+                                        <a href="{{ route('booking.seat-selection', ['rideId' => $ride->id, 'tripType' => $tripType]) }}" 
+                                           class="btn btn-outline-secondary btn-lg">
+                                            <i class="fas fa-arrow-left me-2"></i>Back to Seat Selection
+                                        </a>
+                                    @endif
                                     <button type="submit" id="pay-button" class="btn btn-success btn-lg" disabled>
-                                        <i class="fas fa-lock me-2"></i>Pay ${{ number_format($pricePerSeat * $bookingData['number_of_seats'], 2) }}
+                                        <i class="fas fa-lock me-2"></i>Pay ${{ number_format($totalPrice, 2) }}
                                     </button>
                                 </div>
                             </form>
