@@ -188,31 +188,21 @@ class DriverRideManagementController extends Controller
         if (!$ride) {
             return redirect()->route('driver.my-rides')->with('error', 'Ride not found or access denied.');
         }
+        
         $validated = $request->validate([
             'station_location' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
             'date' => 'required|date|after_or_equal:today',
             'time' => 'required',
-            'available_seats' => 'required|integer',
+            'available_seats' => 'required|integer|min:1',
             'is_exclusive' => 'required|boolean',
             'is_two_way' => 'required|boolean',
-            // Return trip fields (nullable if not two way)
-            'return_station_location' => 'nullable|string|max:255',
-            'return_destination' => 'nullable|string|max:255',
-            'return_date' => 'nullable|date|after_or_equal:date',
-            'return_time' => 'nullable',
-            'return_available_seats' => 'nullable|integer',
-            'return_is_exclusive' => 'nullable|boolean',
             // Map URL fields
             'station_location_map_url' => 'nullable|url|max:255',
             'destination_map_url' => 'nullable|url|max:255',
-            'return_station_location_map_url' => 'nullable|url|max:255',
-            'return_destination_map_url' => 'nullable|url|max:255',
             // Price fields - conditional based on ride type
             'go_to_price_per_person' => 'nullable|numeric|min:0',
             'go_to_exclusive_price' => 'nullable|numeric|min:0',
-            'return_price_per_person' => 'nullable|numeric|min:0',
-            'return_exclusive_price' => 'nullable|numeric|min:0',
         ]);
 
         // Validate price fields based on ride type
@@ -232,7 +222,23 @@ class DriverRideManagementController extends Controller
             $validated['go_to_exclusive_price'] = null;
         }
 
+        // Handle return trip fields
         if ($request->is_two_way) {
+            $returnValidation = $request->validate([
+                'return_station_location' => 'required|string|max:255',
+                'return_date' => 'required|date|after_or_equal:date',
+                'return_time' => 'required',
+                'return_available_seats' => 'required|integer|min:1',
+                'return_is_exclusive' => 'required|boolean',
+                'return_price_per_person' => 'nullable|numeric|min:0',
+                'return_exclusive_price' => 'nullable|numeric|min:0',
+                'return_station_location_map_url' => 'nullable|url|max:255',
+                'return_destination_map_url' => 'nullable|url|max:255',
+            ]);
+            
+            $validated = array_merge($validated, $returnValidation);
+            
+            // Validate return price fields based on return ride type
             if ($request->return_is_exclusive) {
                 $request->validate([
                     'return_exclusive_price' => 'required|numeric|min:0',
@@ -248,15 +254,24 @@ class DriverRideManagementController extends Controller
                 ]);
                 $validated['return_exclusive_price'] = null;
             }
+            
+            // Always set return_destination to station_location
+            $validated['return_destination'] = $validated['station_location'];
         } else {
+            // Clear return fields for one-way rides
+            $validated['return_station_location'] = null;
+            $validated['return_destination'] = null;
+            $validated['return_date'] = null;
+            $validated['return_time'] = null;
+            $validated['return_available_seats'] = null;
+            $validated['return_is_exclusive'] = null;
             $validated['return_price_per_person'] = null;
             $validated['return_exclusive_price'] = null;
+            $validated['return_station_location_map_url'] = null;
+            $validated['return_destination_map_url'] = null;
         }
 
-        // Always set return_destination to station_location
-        $validated['return_destination'] = $validated['station_location'];
         $ride->update($validated);
-        $ride->save();
         return redirect()->route('driver.my-rides')->with('success', 'Ride updated successfully!');
     }
 

@@ -14,10 +14,33 @@ Thank you for booking your ride with **Hubber**!
 - **Payment Method:** {{ strtoupper($booking->payment_method) }}
 
 ## Trip Details
-- **From:** {{ $booking->trip_type === 'return' ? $booking->ride->destination : $booking->ride->station_location }}
-- **To:** {{ $booking->trip_type === 'return' ? $booking->ride->station_location : $booking->ride->destination }}
+@php
+    $pickupLocation = $booking->trip_type === 'return' ? $booking->ride->destination : $booking->ride->station_location;
+    $destinationLocation = $booking->trip_type === 'return' ? $booking->ride->station_location : $booking->ride->destination;
+    $pickupMapUrl = $booking->trip_type === 'return' ? $booking->ride->return_station_location_map_url : $booking->ride->station_location_map_url;
+    $destinationMapUrl = $booking->trip_type === 'return' ? $booking->ride->return_destination_map_url : $booking->ride->destination_map_url;
+@endphp
+- **From:** {{ $pickupLocation }}
+  @if($pickupMapUrl)
+    📍 [View Pickup Location on Map]({{ $pickupMapUrl }})
+  @else
+    📍 [View Pickup Location on Map](https://maps.google.com/?q={{ urlencode($pickupLocation) }})
+  @endif
+- **To:** {{ $destinationLocation }}
+  @if($destinationMapUrl)
+    🎯 [View Destination on Map]({{ $destinationMapUrl }})
+  @else
+    🎯 [View Destination on Map](https://maps.google.com/?q={{ urlencode($destinationLocation) }})
+  @endif
 - **Travel Date:** {{ $booking->trip_type === 'return' ? $booking->ride->return_date->format('l, F d, Y') : $booking->ride->date->format('l, F d, Y') }}
 - **Departure Time:** {{ $booking->trip_type === 'return' ? $booking->ride->return_time->format('H:i A') : $booking->ride->time->format('H:i A') }}
+
+@component('mail::panel')
+## 🗺️ Route Information
+**Get Directions:** [View Route on Google Maps](https://maps.google.com/maps?f=d&saddr={{ urlencode($pickupLocation) }}&daddr={{ urlencode($destinationLocation) }})
+
+This will show you the best route from your pickup location to your destination.
+@endcomponent
 
 ## Driver Information
 - **Driver Name:** {{ $booking->ride->user->name }}
@@ -57,6 +80,11 @@ Thank you for booking your ride with **Hubber**!
 @endcomponent
 
 ---
+
+## 📱 Quick Actions
+- **View Booking Details:** [My Bookings]({{ route('user.bookings') }})
+- **Get Directions:** [Google Maps Route](https://maps.google.com/maps?f=d&saddr={{ urlencode($pickupLocation) }}&daddr={{ urlencode($destinationLocation) }})
+- **Contact Support:** [Customer Service](mailto:support@hubber.com)
 
 Thank you for choosing Hubber! This receipt serves as proof of your booking. Please present this email or the QR code to your driver.
 

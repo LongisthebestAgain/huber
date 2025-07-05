@@ -37,6 +37,19 @@
                                 <p class="mb-0 ms-4">
                                     {{ $booking->trip_type === 'return' ? $booking->ride->destination : $booking->ride->station_location }}
                                 </p>
+                                @php
+                                    $pickupMapUrl = $booking->trip_type === 'return' ? $booking->ride->return_station_location_map_url : $booking->ride->station_location_map_url;
+                                    $pickupLocation = $booking->trip_type === 'return' ? $booking->ride->destination : $booking->ride->station_location;
+                                @endphp
+                                @if($pickupMapUrl)
+                                    <a href="{{ $pickupMapUrl }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1 ms-4">
+                                        <i class="fas fa-map-marker-alt me-1"></i>View on Map
+                                    </a>
+                                @else
+                                    <a href="https://maps.google.com/?q={{ urlencode($pickupLocation) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1 ms-4">
+                                        <i class="fas fa-map-marker-alt me-1"></i>View on Map
+                                    </a>
+                                @endif
                             </div>
                             
                             <div class="mb-3">
@@ -47,6 +60,19 @@
                                 <p class="mb-0 ms-4">
                                     {{ $booking->trip_type === 'return' ? $booking->ride->station_location : $booking->ride->destination }}
                                 </p>
+                                @php
+                                    $destinationMapUrl = $booking->trip_type === 'return' ? $booking->ride->return_destination_map_url : $booking->ride->destination_map_url;
+                                    $destinationLocation = $booking->trip_type === 'return' ? $booking->ride->station_location : $booking->ride->destination;
+                                @endphp
+                                @if($destinationMapUrl)
+                                    <a href="{{ $destinationMapUrl }}" target="_blank" class="btn btn-sm btn-outline-success mt-1 ms-4">
+                                        <i class="fas fa-map-marker-alt me-1"></i>View on Map
+                                    </a>
+                                @else
+                                    <a href="https://maps.google.com/?q={{ urlencode($destinationLocation) }}" target="_blank" class="btn btn-sm btn-outline-success mt-1 ms-4">
+                                        <i class="fas fa-map-marker-alt me-1"></i>View on Map
+                                    </a>
+                                @endif
                             </div>
                             
                             <div class="mb-3">
@@ -109,6 +135,41 @@
                                     <span class="fw-semibold">Contact Phone:</span>
                                 </div>
                                 <p class="mb-0 ms-4">{{ $booking->contact_phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Route Map Preview -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light border-0" style="border-radius: 8px;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                <i class="fas fa-map-marker-alt" style="font-size: 12px;"></i>
+                                            </div>
+                                            <span class="fw-semibold">{{ $pickupLocation }}</span>
+                                        </div>
+                                        <div class="text-muted">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="fw-semibold">{{ $destinationLocation }}</span>
+                                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center ms-2" style="width: 30px; height: 30px;">
+                                                <i class="fas fa-flag-checkered" style="font-size: 12px;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ms-3">
+                                            @php
+                                                $routeUrl = "https://maps.google.com/maps?f=d&saddr=" . urlencode($pickupLocation) . "&daddr=" . urlencode($destinationLocation);
+                                            @endphp
+                                            <a href="{{ $routeUrl }}" target="_blank" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-route me-1"></i>Get Directions
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -197,11 +258,14 @@
 
             <!-- Action Buttons -->
             <div class="text-center">
-                <a href="{{ route('find.rides') }}" class="btn btn-primary px-4 py-2 me-3">
-                    <i class="fas fa-search me-2"></i>Find More Rides
+                <a href="{{ route('user.bookings') }}" class="btn btn-primary px-4 py-2 me-3">
+                    <i class="fas fa-list me-2"></i>View All Bookings
                 </a>
-                <a href="{{ route('user.bookings') }}" class="btn btn-outline-secondary px-4 py-2">
-                    <i class="fas fa-list me-2"></i>View My Bookings
+                <a href="{{ route('user.booking.receipt', $booking->id) }}" class="btn btn-success px-4 py-2 me-3" target="_blank">
+                    <i class="fas fa-print me-2"></i>Print Receipt
+                </a>
+                <a href="{{ route('find.rides') }}" class="btn btn-outline-secondary px-4 py-2">
+                    <i class="fas fa-search me-2"></i>Find More Rides
                 </a>
             </div>
         </div>
@@ -210,11 +274,10 @@
 
 <style>
 .card {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     transition: box-shadow 0.2s;
 }
 .card:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
 }
 .btn {
     border-radius: 8px;
