@@ -491,14 +491,450 @@ class BookingController extends Controller
             return redirect()->route('login')->with('error', 'User not found. Please login again.');
         }
 
-        $booking = RidePurchase::with(['ride.user'])->where('id', $bookingId)
+        $booking = RidePurchase::with(['ride.user', 'ride'])
+            ->where('id', $bookingId)
             ->where('user_id', $user->id)
             ->first();
 
         if (!$booking) {
-            return redirect()->route('find.rides')->with('error', 'Booking not found.');
+            return redirect()->route('user.bookings')->with('error', 'Booking not found.');
         }
 
-        return view('booking.confirmation', compact('booking', 'user'));
+        return view('booking.confirmation', compact('booking'));
+    }
+
+    // API Methods
+    public function apiFindRides(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to find rides.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        try {
+            $rides = Ride::with('user')
+                ->where('status', 'active')
+                ->where('date', '>=', now()->format('Y-m-d'))
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
+                ->get();
+
+            return response()->json([
+                'message' => 'Rides found successfully',
+                'status' => 'success',
+                'data' => [
+                    'rides' => $rides
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while finding rides.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiAvailableRides(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view available rides.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        try {
+            $rides = Ride::with('user')
+                ->where('status', 'active')
+                ->where('date', '>=', now()->format('Y-m-d'))
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
+                ->get();
+
+            return response()->json([
+                'message' => 'Available rides retrieved successfully',
+                'status' => 'success',
+                'data' => [
+                    'rides' => $rides
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while retrieving available rides.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiShowPaymentPage(Request $request, $rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to book a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::with('user')->find($rideId);
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Determine price and available seats based on trip type
+        if ($tripType === 'return' && $ride->is_two_way) {
+            if ($ride->return_is_exclusive) {
+                $pricePerSeat = $ride->return_exclusive_price;
+                $isExclusive = true;
+            } else {
+                $pricePerSeat = $ride->return_price_per_person;
+                $isExclusive = false;
+            }
+            $availableSeats = $ride->return_available_seats;
+            $date = $ride->return_date;
+            $time = $ride->return_time;
+        } else {
+            if ($ride->is_exclusive) {
+                $pricePerSeat = $ride->go_to_exclusive_price;
+                $isExclusive = true;
+            } else {
+                $pricePerSeat = $ride->go_to_price_per_person;
+                $isExclusive = false;
+            }
+            $availableSeats = $ride->available_seats;
+            $date = $ride->date;
+            $time = $ride->time;
+        }
+
+        // Check if any seats are available
+        if ($availableSeats <= 0) {
+            return response()->json([
+                'message' => 'Sorry, this ride is fully booked and no longer available.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Payment page data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'ride' => $ride,
+                'user' => $user,
+                'trip_type' => $tripType,
+                'price_per_seat' => $pricePerSeat,
+                'available_seats' => $availableSeats,
+                'date' => $date,
+                'time' => $time,
+                'is_exclusive' => $isExclusive
+            ]
+        ]);
+    }
+
+    public function apiShowSeatSelection($rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = request()->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to book a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::with('user')->find($rideId);
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Determine available seats based on trip type
+        if ($tripType === 'return' && $ride->is_two_way) {
+            $availableSeats = $ride->return_available_seats;
+            $date = $ride->return_date;
+            $time = $ride->return_time;
+            $pricePerSeat = $ride->return_price_per_person;
+        } else {
+            $availableSeats = $ride->available_seats;
+            $date = $ride->date;
+            $time = $ride->time;
+            $pricePerSeat = $ride->go_to_price_per_person;
+        }
+
+        // Check if any seats are available
+        if ($availableSeats <= 0) {
+            return response()->json([
+                'message' => 'Sorry, this ride is fully booked and no longer available.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Get already booked seats for this ride and trip type
+        $bookedSeats = RidePurchase::where('ride_id', $rideId)
+            ->where('trip_type', $tripType)
+            ->where('seats_confirmed', true)
+            ->pluck('selected_seats')
+            ->flatten()
+            ->filter()
+            ->toArray();
+
+        return response()->json([
+            'message' => 'Seat selection data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'ride' => $ride,
+                'user' => $user,
+                'trip_type' => $tripType,
+                'available_seats' => $availableSeats,
+                'date' => $date,
+                'time' => $time,
+                'price_per_seat' => $pricePerSeat,
+                'booked_seats' => $bookedSeats
+            ]
+        ]);
+    }
+
+    public function apiProcessSeatSelection(Request $request, $rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to book a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::find($rideId);
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Validate request
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'number_of_seats' => 'required|integer|min:1',
+            'selected_seats' => 'required|array|min:1',
+            'selected_seats.*' => 'required|integer|min:1',
+            'contact_phone' => 'required|string',
+            'passenger_names' => 'required|array|min:1',
+            'passenger_names.*' => 'required|string|max:255',
+            'special_requests' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $numberOfSeats = $request->input('number_of_seats');
+        $selectedSeats = $request->input('selected_seats');
+        $contactPhone = $request->input('contact_phone');
+        $passengerNames = $request->input('passenger_names');
+        $specialRequests = $request->input('special_requests');
+
+        // Ensure selectedSeats is an array
+        if (!is_array($selectedSeats)) {
+            $selectedSeats = [];
+        }
+
+        // Determine available seats based on trip type
+        if ($tripType === 'return' && $ride->is_two_way) {
+            $availableSeats = $ride->return_available_seats;
+            $date = $ride->return_date;
+            $time = $ride->return_time;
+            $pricePerSeat = $ride->return_price_per_person;
+        } else {
+            $availableSeats = $ride->available_seats;
+            $date = $ride->date;
+            $time = $ride->time;
+            $pricePerSeat = $ride->go_to_price_per_person;
+        }
+
+        // Check if any seats are available
+        if ($availableSeats <= 0) {
+            return response()->json([
+                'message' => 'Sorry, this ride is fully booked and no longer available.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Check if enough seats are available
+        if ((int)$numberOfSeats > $availableSeats) {
+            return response()->json([
+                'message' => 'Not enough seats available.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Create booking data
+        $bookingData = [
+            'number_of_seats' => $numberOfSeats,
+            'selected_seats' => $selectedSeats,
+            'passenger_names' => $passengerNames,
+            'passenger_details' => array_map(function($name, $seat) {
+                return [
+                    'name' => $name,
+                    'seat_number' => $seat
+                ];
+            }, $passengerNames, $selectedSeats),
+            'contact_phone' => $contactPhone,
+            'special_requests' => $specialRequests
+        ];
+
+        return response()->json([
+            'message' => 'Seat selection processed successfully',
+            'status' => 'success',
+            'data' => [
+                'booking_data' => $bookingData,
+                'ride' => $ride,
+                'trip_type' => $tripType,
+                'total_price' => $numberOfSeats * $pricePerSeat
+            ]
+        ]);
+    }
+
+    public function apiProcessBooking(Request $request, $rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to book a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::find($rideId);
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Validate request
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'booking_data' => 'required|array',
+            'booking_data.number_of_seats' => 'required|integer|min:1',
+            'booking_data.selected_seats' => 'required|array|min:1',
+            'booking_data.passenger_names' => 'required|array|min:1',
+            'booking_data.contact_phone' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $bookingData = $request->input('booking_data');
+
+        try {
+            // Create the booking
+            $ridePurchase = new RidePurchase();
+            $ridePurchase->user_id = $user->id;
+            $ridePurchase->ride_id = $rideId;
+            $ridePurchase->trip_type = $tripType;
+            $ridePurchase->number_of_seats = $bookingData['number_of_seats'];
+            $ridePurchase->selected_seats = $bookingData['selected_seats'];
+            $ridePurchase->passenger_names = $bookingData['passenger_names'];
+            $ridePurchase->contact_phone = $bookingData['contact_phone'];
+            $ridePurchase->special_requests = $bookingData['special_requests'] ?? '';
+            $ridePurchase->seats_confirmed = true;
+            $ridePurchase->save();
+
+            return response()->json([
+                'message' => 'Booking processed successfully',
+                'status' => 'success',
+                'data' => [
+                    'booking_id' => $ridePurchase->id,
+                    'ride' => $ride,
+                    'booking' => $ridePurchase
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while processing the booking.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiShowThankYou($bookingId)
+    {
+        // Get user from token authentication
+        $user = request()->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view booking details.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $booking = RidePurchase::with('ride.user')->find($bookingId);
+        if (!$booking || $booking->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Booking not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Thank you page data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'booking' => $booking,
+                'ride' => $booking->ride
+            ]
+        ]);
+    }
+
+    public function apiShowConfirmation($bookingId)
+    {
+        // Get user from token authentication
+        $user = request()->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view booking details.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $booking = RidePurchase::with('ride.user')->find($bookingId);
+        if (!$booking || $booking->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Booking not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Confirmation page data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'booking' => $booking,
+                'ride' => $booking->ride
+            ]
+        ]);
     }
 }

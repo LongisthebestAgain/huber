@@ -138,4 +138,94 @@ class ProfileController extends Controller
             return back()->with('error', 'An error occurred while updating your profile. Please try again.');
         }
     }
+
+    // API Methods
+    public function apiShow(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to access your profile.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        // Split name into first and last name
+        $nameParts = explode(' ', $user->name, 2);
+        $user->first_name = $nameParts[0] ?? '';
+        $user->last_name = $nameParts[1] ?? '';
+
+        return response()->json([
+            'message' => 'Profile retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'role' => $user->role ?? 'user'
+            ]
+        ]);
+    }
+
+    public function apiUpdate(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to update your profile.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        // Validation rules
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'required|string|max:20',
+            'date_of_birth' => 'nullable|date|before:today',
+            'address' => 'nullable|string|max:500',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Update basic information
+            $user->name = $request->first_name . ' ' . $request->last_name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->date_of_birth = $request->date_of_birth;
+            $user->address = $request->address;
+            $user->emergency_contact_name = $request->emergency_contact_name;
+            $user->emergency_contact_phone = $request->emergency_contact_phone;
+            $user->emergency_contact_relationship = $request->emergency_contact_relationship;
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'Profile updated successfully!',
+                'status' => 'success',
+                'data' => [
+                    'user' => $user
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while updating your profile. Please try again.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
 } 

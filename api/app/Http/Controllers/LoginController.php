@@ -34,17 +34,6 @@ class LoginController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
         if ($user && Hash::check($credentials['password'], $user->password)) {
-            // Store user data in session for web interface
-            $nameParts = explode(' ', $user->name, 2);
-            $request->session()->put('user', [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'first_name' => $nameParts[0] ?? '',
-                'last_name' => $nameParts[1] ?? '',
-            ]);
-            $request->session()->put('user_role', $user->role ?? 'user');
-            
             // Create token for API access
             $token = $user->createToken('auth_token')->plainTextToken;
             
@@ -55,8 +44,7 @@ class LoginController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                ],
-                'redirect_url' => route('user.profile') // Redirect to profile page
+                ]
             ]);
         }
         return response()->json(['success' => false, 'message' => 'Invalid credentials.'], 401);
@@ -67,7 +55,6 @@ class LoginController extends Controller
         if ($request->user()) {
             $request->user()->currentAccessToken()->delete();
         }
-        $request->session()->forget(['user', 'user_role']);
         return response()->json(['success' => true, 'message' => 'Logged out successfully.']);
     }
 } 

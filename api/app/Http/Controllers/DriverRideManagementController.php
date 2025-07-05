@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Ride;
+use App\Models\RidePurchase;
 
 class DriverRideManagementController extends Controller
 {
@@ -596,5 +597,533 @@ class DriverRideManagementController extends Controller
             'booked_seats' => $totalSeats - $availableSeats,
             'seat_map' => $seatMap
         ];
+    }
+
+    // API Methods
+    public function apiIndex(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to access ride management.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        // Get all rides created by this driver
+        $allRides = Ride::where('user_id', $user->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+            
+        // Separate go and return rides
+        $goRides = collect();
+        $returnRides = collect();
+        
+        foreach ($allRides as $ride) {
+            // Add the main ride (go trip)
+            $goRides->push($ride);
+            
+            // If it's a two-way ride with return details, add it as a separate return ride
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time) {
+                $returnRides->push($ride);
+            }
+        }
+            
+        return response()->json([
+            'message' => 'Ride management data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'go_rides' => $goRides,
+                'return_rides' => $returnRides
+            ]
+        ]);
+    }
+
+    public function apiCreate(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to create a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        return response()->json([
+            'message' => 'Ride creation form data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'form_fields' => [
+                    'station_location' => 'required|string|max:255',
+                    'destination' => 'required|string|max:255',
+                    'date' => 'required|date|after_or_equal:today',
+                    'time' => 'required',
+                    'available_seats' => 'required|integer',
+                    'is_exclusive' => 'required|boolean',
+                    'is_two_way' => 'required|boolean',
+                    'return_station_location' => 'nullable|string|max:255',
+                    'return_destination' => 'nullable|string|max:255',
+                    'return_date' => 'nullable|date|after_or_equal:date',
+                    'return_time' => 'nullable',
+                    'return_available_seats' => 'nullable|integer',
+                    'return_is_exclusive' => 'nullable|boolean',
+                    'station_location_map_url' => 'nullable|url|max:255',
+                    'destination_map_url' => 'nullable|url|max:255',
+                    'return_station_location_map_url' => 'nullable|url|max:255',
+                    'return_destination_map_url' => 'nullable|url|max:255',
+                    'go_to_price_per_person' => 'nullable|numeric|min:0',
+                    'go_to_exclusive_price' => 'nullable|numeric|min:0',
+                    'return_price_per_person' => 'nullable|numeric|min:0',
+                    'return_exclusive_price' => 'nullable|numeric|min:0'
+                ]
+            ]
+        ]);
+    }
+
+    public function apiStore(\Illuminate\Http\Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to create a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'station_location' => 'required|string|max:255',
+            'destination' => 'required|string|max:255',
+            'date' => 'required|date|after_or_equal:today',
+            'time' => 'required',
+            'available_seats' => 'required|integer',
+            'is_exclusive' => 'required|boolean',
+            'is_two_way' => 'required|boolean',
+            'return_station_location' => 'nullable|string|max:255',
+            'return_destination' => 'nullable|string|max:255',
+            'return_date' => 'nullable|date|after_or_equal:date',
+            'return_time' => 'nullable',
+            'return_available_seats' => 'nullable|integer',
+            'return_is_exclusive' => 'nullable|boolean',
+            'station_location_map_url' => 'nullable|url|max:255',
+            'destination_map_url' => 'nullable|url|max:255',
+            'return_station_location_map_url' => 'nullable|url|max:255',
+            'return_destination_map_url' => 'nullable|url|max:255',
+            'go_to_price_per_person' => 'nullable|numeric|min:0',
+            'go_to_exclusive_price' => 'nullable|numeric|min:0',
+            'return_price_per_person' => 'nullable|numeric|min:0',
+            'return_exclusive_price' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $request->all();
+
+        // Validate price fields based on ride type
+        if ($request->is_exclusive) {
+            $exclusiveValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'go_to_exclusive_price' => 'required|numeric|min:0',
+            ], [
+                'go_to_exclusive_price.required' => 'Exclusive price is required for exclusive rides.',
+            ]);
+            
+            if ($exclusiveValidator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'status' => 'error',
+                    'errors' => $exclusiveValidator->errors()
+                ], 422);
+            }
+            
+            $validated['go_to_price_per_person'] = null;
+        } else {
+            $sharedValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'go_to_price_per_person' => 'required|numeric|min:0',
+            ], [
+                'go_to_price_per_person.required' => 'Price per person is required for shared rides.',
+            ]);
+            
+            if ($sharedValidator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'status' => 'error',
+                    'errors' => $sharedValidator->errors()
+                ], 422);
+            }
+            
+            $validated['go_to_exclusive_price'] = null;
+        }
+
+        if ($request->is_two_way) {
+            if ($request->return_is_exclusive) {
+                $returnExclusiveValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'return_exclusive_price' => 'required|numeric|min:0',
+                ], [
+                    'return_exclusive_price.required' => 'Return exclusive price is required for exclusive return rides.',
+                ]);
+                
+                if ($returnExclusiveValidator->fails()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'status' => 'error',
+                        'errors' => $returnExclusiveValidator->errors()
+                    ], 422);
+                }
+                
+                $validated['return_price_per_person'] = null;
+            } else {
+                $returnSharedValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'return_price_per_person' => 'required|numeric|min:0',
+                ], [
+                    'return_price_per_person.required' => 'Return price per person is required for shared return rides.',
+                ]);
+                
+                if ($returnSharedValidator->fails()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'status' => 'error',
+                        'errors' => $returnSharedValidator->errors()
+                    ], 422);
+                }
+                
+                $validated['return_exclusive_price'] = null;
+            }
+        } else {
+            $validated['return_price_per_person'] = null;
+            $validated['return_exclusive_price'] = null;
+        }
+
+        // Always set return_destination to station_location
+        $validated['return_destination'] = $validated['station_location'];
+        $ride = new \App\Models\Ride($validated);
+        $ride->user_id = $user->id;
+        $ride->save();
+        
+        return response()->json([
+            'message' => 'Ride created successfully!',
+            'status' => 'success',
+            'data' => [
+                'ride' => $ride
+            ]
+        ]);
+    }
+
+    public function apiMyRides(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view your rides.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $rides = Ride::where('user_id', $user->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get();
+            
+        return response()->json([
+            'message' => 'My rides retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'rides' => $rides
+            ]
+        ]);
+    }
+
+    public function apiEdit(Request $request, $rideId)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to edit a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+            
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+        
+        return response()->json([
+            'message' => 'Ride edit form data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'ride' => $ride
+            ]
+        ]);
+    }
+
+    public function apiUpdate(Request $request, $rideId)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to update a ride.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+            
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+        
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'station_location' => 'required|string|max:255',
+            'destination' => 'required|string|max:255',
+            'date' => 'required|date|after_or_equal:today',
+            'time' => 'required',
+            'available_seats' => 'required|integer',
+            'is_exclusive' => 'required|boolean',
+            'is_two_way' => 'required|boolean',
+            'return_station_location' => 'nullable|string|max:255',
+            'return_destination' => 'nullable|string|max:255',
+            'return_date' => 'nullable|date|after_or_equal:date',
+            'return_time' => 'nullable',
+            'return_available_seats' => 'nullable|integer',
+            'return_is_exclusive' => 'nullable|boolean',
+            'station_location_map_url' => 'nullable|url|max:255',
+            'destination_map_url' => 'nullable|url|max:255',
+            'return_station_location_map_url' => 'nullable|url|max:255',
+            'return_destination_map_url' => 'nullable|url|max:255',
+            'go_to_price_per_person' => 'nullable|numeric|min:0',
+            'go_to_exclusive_price' => 'nullable|numeric|min:0',
+            'return_price_per_person' => 'nullable|numeric|min:0',
+            'return_exclusive_price' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $request->all();
+
+        // Validate price fields based on ride type
+        if ($request->is_exclusive) {
+            $exclusiveValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'go_to_exclusive_price' => 'required|numeric|min:0',
+            ], [
+                'go_to_exclusive_price.required' => 'Exclusive price is required for exclusive rides.',
+            ]);
+            
+            if ($exclusiveValidator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'status' => 'error',
+                    'errors' => $exclusiveValidator->errors()
+                ], 422);
+            }
+            
+            $validated['go_to_price_per_person'] = null;
+        } else {
+            $sharedValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'go_to_price_per_person' => 'required|numeric|min:0',
+            ], [
+                'go_to_price_per_person.required' => 'Price per person is required for shared rides.',
+            ]);
+            
+            if ($sharedValidator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'status' => 'error',
+                    'errors' => $sharedValidator->errors()
+                ], 422);
+            }
+            
+            $validated['go_to_exclusive_price'] = null;
+        }
+
+        if ($request->is_two_way) {
+            if ($request->return_is_exclusive) {
+                $returnExclusiveValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'return_exclusive_price' => 'required|numeric|min:0',
+                ], [
+                    'return_exclusive_price.required' => 'Return exclusive price is required for exclusive return rides.',
+                ]);
+                
+                if ($returnExclusiveValidator->fails()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'status' => 'error',
+                        'errors' => $returnExclusiveValidator->errors()
+                    ], 422);
+                }
+                
+                $validated['return_price_per_person'] = null;
+            } else {
+                $returnSharedValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'return_price_per_person' => 'required|numeric|min:0',
+                ], [
+                    'return_price_per_person.required' => 'Return price per person is required for shared return rides.',
+                ]);
+                
+                if ($returnSharedValidator->fails()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'status' => 'error',
+                        'errors' => $returnSharedValidator->errors()
+                    ], 422);
+                }
+                
+                $validated['return_exclusive_price'] = null;
+            }
+        } else {
+            $validated['return_price_per_person'] = null;
+            $validated['return_exclusive_price'] = null;
+        }
+
+        // Always set return_destination to station_location
+        $validated['return_destination'] = $validated['station_location'];
+        
+        $ride->update($validated);
+        
+        return response()->json([
+            'message' => 'Ride updated successfully!',
+            'status' => 'success',
+            'data' => [
+                'ride' => $ride
+            ]
+        ]);
+    }
+
+    public function apiFindRides(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to find rides.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $rides = Ride::with('user')
+            ->where('status', 'active')
+            ->where('date', '>=', now()->format('Y-m-d'))
+            ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc')
+            ->get();
+            
+        return response()->json([
+            'message' => 'Available rides found successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'rides' => $rides
+            ]
+        ]);
+    }
+
+    public function apiEarnings(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view earnings.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        // Get all completed bookings for this driver's rides
+        $earnings = RidePurchase::with(['ride', 'user'])
+            ->whereHas('ride', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->where('payment_status', 'completed')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Calculate total earnings
+        $totalEarnings = $earnings->sum('total_amount');
+        
+        return response()->json([
+            'message' => 'Earnings data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'earnings' => $earnings,
+                'total_earnings' => $totalEarnings
+            ]
+        ]);
+    }
+
+    public function apiShowRideCustomers(Request $request, $rideId, $tripType = null)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view ride customers.',
+                'status' => 'error'
+            ], 401);
+        }
+        
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+            
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+        
+        $query = RidePurchase::with('user')
+            ->where('ride_id', $rideId)
+            ->where('seats_confirmed', true);
+            
+        if ($tripType) {
+            $query->where('trip_type', $tripType);
+        }
+        
+        $bookings = $query->orderBy('created_at', 'desc')->get();
+        
+        return response()->json([
+            'message' => 'Ride customers data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'ride' => $ride,
+                'bookings' => $bookings,
+                'trip_type' => $tripType
+            ]
+        ]);
     }
 } 

@@ -270,9 +270,9 @@ class RideCompletionController extends Controller
             return redirect()->route('login')->with('error', 'User not found. Please login again.');
         }
 
-        // Get all reviews for rides owned by this driver
-        $reviews = RideReview::with(['ride', 'user', 'ridePurchase'])
-            ->whereHas('ride', function($q) use ($user) {
+        // Get all reviews for rides by this driver
+        $reviews = RideReview::with(['ridePurchase.user', 'ridePurchase.ride'])
+            ->whereHas('ridePurchase.ride', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
             ->orderBy('created_at', 'desc')
@@ -283,9 +283,6 @@ class RideCompletionController extends Controller
         $averageOverallRating = $totalReviews > 0 ? $reviews->avg('overall_rating') : 0;
         $averageDriverRating = $totalReviews > 0 ? $reviews->avg('driver_rating') : 0;
         $averageVehicleRating = $totalReviews > 0 ? $reviews->avg('vehicle_rating') : 0;
-        $averagePunctualityRating = $totalReviews > 0 ? $reviews->avg('punctuality_rating') : 0;
-        $averageSafetyRating = $totalReviews > 0 ? $reviews->avg('safety_rating') : 0;
-        $averageComfortRating = $totalReviews > 0 ? $reviews->avg('comfort_rating') : 0;
 
         // Rating distribution
         $ratingDistribution = [];
@@ -293,6 +290,347 @@ class RideCompletionController extends Controller
             $ratingDistribution[$i] = $reviews->where('overall_rating', $i)->count();
         }
 
-        return view('ride-management.all-reviews', compact('user', 'reviews', 'totalReviews', 'averageOverallRating', 'averageDriverRating', 'averageVehicleRating', 'averagePunctualityRating', 'averageSafetyRating', 'averageComfortRating', 'ratingDistribution'));
+        return view('driver.all-reviews', compact('reviews', 'totalReviews', 'averageOverallRating', 'averageDriverRating', 'averageVehicleRating', 'ratingDistribution'));
+    }
+
+    // API Methods
+    public function apiMarkAsOngoing(Request $request, $rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to update ride status.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found or access denied.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            if ($tripType === 'return') {
+                $ride->return_completion_status = 'ongoing';
+            } else {
+                $ride->go_completion_status = 'ongoing';
+            }
+
+            $ride->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Ride marked as ongoing successfully!',
+                'status' => 'success',
+                'data' => [
+                    'ride' => $ride,
+                    'trip_type' => $tripType
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to mark ride as ongoing. Please try again.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiMarkAsCompleted(Request $request, $rideId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to complete rides.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::where('id', $rideId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found or access denied.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            if ($tripType === 'return') {
+                $ride->return_completion_status = 'completed';
+                $ride->return_completed_at = now();
+            } else {
+                $ride->go_completion_status = 'completed';
+                $ride->go_completed_at = now();
+            }
+
+            $ride->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Ride marked as completed successfully!',
+                'status' => 'success',
+                'data' => [
+                    'ride' => $ride,
+                    'trip_type' => $tripType
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to mark ride as completed. Please try again.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiShowReviewForm(Request $request, $bookingId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to review rides.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $booking = RidePurchase::with(['ride'])
+            ->where('id', $bookingId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'message' => 'Booking not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Check if ride is completed (only allow reviews for completed rides)
+        $rideStatus = $tripType === 'return' ? $booking->ride->return_completion_status : $booking->ride->go_completion_status;
+        
+        if ($rideStatus === 'pending') {
+            return response()->json([
+                'message' => 'This ride has not started yet. You can review once the ride is completed.',
+                'status' => 'error'
+            ], 400);
+        }
+        
+        if ($rideStatus === 'ongoing') {
+            return response()->json([
+                'message' => 'This ride is currently ongoing. You can review once the driver marks it as completed.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Check if review already exists
+        $existingReview = RideReview::where('ride_purchase_id', $bookingId)
+            ->where('trip_type', $tripType)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'You have already reviewed this ride.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Review form data retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'booking' => $booking,
+                'trip_type' => $tripType,
+                'form_fields' => [
+                    'overall_rating' => 'required|integer|min:1|max:5',
+                    'driver_rating' => 'required|integer|min:1|max:5',
+                    'vehicle_rating' => 'required|integer|min:1|max:5',
+                    'punctuality_rating' => 'required|integer|min:1|max:5',
+                    'safety_rating' => 'required|integer|min:1|max:5',
+                    'comfort_rating' => 'required|integer|min:1|max:5',
+                    'review_text' => 'nullable|string|max:1000'
+                ]
+            ]
+        ]);
+    }
+
+    public function apiSubmitReview(Request $request, $bookingId, $tripType = 'go')
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to submit reviews.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $booking = RidePurchase::with(['ride'])
+            ->where('id', $bookingId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'message' => 'Booking not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        // Check if ride is completed
+        $rideStatus = $tripType === 'return' ? $booking->ride->return_completion_status : $booking->ride->go_completion_status;
+        
+        if ($rideStatus !== 'completed') {
+            return response()->json([
+                'message' => 'You can only review completed rides.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Check if review already exists
+        $existingReview = RideReview::where('ride_purchase_id', $bookingId)
+            ->where('trip_type', $tripType)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'You have already reviewed this ride.',
+                'status' => 'error'
+            ], 400);
+        }
+
+        // Validate review data
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'overall_rating' => 'required|integer|min:1|max:5',
+            'driver_rating' => 'required|integer|min:1|max:5',
+            'vehicle_rating' => 'required|integer|min:1|max:5',
+            'punctuality_rating' => 'required|integer|min:1|max:5',
+            'safety_rating' => 'required|integer|min:1|max:5',
+            'comfort_rating' => 'required|integer|min:1|max:5',
+            'review_text' => 'nullable|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Create the review
+            $review = new RideReview();
+            $review->ride_purchase_id = $bookingId;
+            $review->ride_id = $booking->ride_id;
+            $review->user_id = $user->id;
+            $review->driver_id = $booking->ride->user_id;
+            $review->trip_type = $tripType;
+            $review->overall_rating = $request->overall_rating;
+            $review->driver_rating = $request->driver_rating;
+            $review->vehicle_rating = $request->vehicle_rating;
+            $review->punctuality_rating = $request->punctuality_rating;
+            $review->safety_rating = $request->safety_rating;
+            $review->comfort_rating = $request->comfort_rating;
+            $review->review_text = $request->review_text;
+            $review->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Review submitted successfully!',
+                'status' => 'success',
+                'data' => [
+                    'review' => $review,
+                    'booking' => $booking
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to submit review. Please try again.',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function apiViewRideReviews(Request $request, $rideId)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view reviews.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $ride = Ride::find($rideId);
+        if (!$ride) {
+            return response()->json([
+                'message' => 'Ride not found.',
+                'status' => 'error'
+            ], 404);
+        }
+
+        $reviews = RideReview::with(['user', 'ride'])
+            ->where('ride_id', $rideId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Ride reviews retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'ride' => $ride,
+                'reviews' => $reviews
+            ]
+        ]);
+    }
+
+    public function apiViewAllReviews(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to view reviews.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        $reviews = RideReview::with(['user', 'ride'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => 'All reviews retrieved successfully',
+            'status' => 'success',
+            'data' => [
+                'reviews' => $reviews
+            ]
+        ]);
     }
 }

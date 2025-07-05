@@ -1,0 +1,1221 @@
+{
+	"info": {
+		"_postman_id": "huber-api-collection",
+		"name": "Huber API Collection",
+		"description": "Complete API collection for Huber ride-sharing platform. Test all endpoints including authentication, user management, ride booking, payments, and driver operations.\n\n**How to use:**\n- Use the Login request to get your API token.\n- Copy the 'token' value from the response and set it as 'auth_token' in your Postman environment.\n- All protected endpoints require the Authorization: Bearer {{auth_token}} header.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"uylongsong@gmail.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "login"]
+						},
+						"description": "**Login to get your API token.**\n\n- Send your email and password.\n- Copy the 'token' value from the response.\n- Set it as 'auth_token' in your Postman environment.\n- Use this token for all protected endpoints.\n- No session or cookies are used."
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "logout"]
+						}
+					}
+				},
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Uylong\",\n    \"last_name\": \"Song\",\n    \"email\": \"uylongsong@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Driver",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "Uylong",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Song",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "uylongsong.driver@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "+1234567890",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text"
+								},
+								{
+									"key": "password_confirmation",
+									"value": "password123",
+									"type": "text"
+								},
+								{
+									"key": "license_number",
+									"value": "DL123456789",
+									"type": "text"
+								},
+								{
+									"key": "license_expiry",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "vehicle_model",
+									"value": "Toyota Camry",
+									"type": "text"
+								},
+								{
+									"key": "vehicle_year",
+									"value": "2020",
+									"type": "text"
+								},
+								{
+									"key": "vehicle_color",
+									"value": "Silver",
+									"type": "text"
+								},
+								{
+									"key": "license_plate",
+									"value": "ABC123",
+									"type": "text"
+								},
+								{
+									"key": "vehicle_seats",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "vehicle_photo_1",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "vehicle_photo_2",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "vehicle_photo_3",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register-driver",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register-driver"]
+						}
+					}
+				},
+				{
+					"name": "Register Driver Documents",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "driver_license_file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "vehicle_registration_file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "insurance_certificate_file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "terms_accepted",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register-driver-docs",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register-driver-docs"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Home",
+			"item": [
+				{
+					"name": "Get Home",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/",
+							"host": ["{{base_url}}"],
+							"path": ["api", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Uylong\",\n    \"last_name\": \"Song\",\n    \"email\": \"uylongsong@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"address\": \"123 Main St, City, State\",\n    \"emergency_contact_name\": \"Jane Doe\",\n    \"emergency_contact_phone\": \"+1234567890\",\n    \"emergency_contact_relationship\": \"Spouse\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"password123\",\n    \"new_password\": \"newpassword123\",\n    \"new_password_confirmation\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/password/change",
+							"host": ["{{base_url}}"],
+							"path": ["api", "password", "change"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Driver Profile",
+			"item": [
+				{
+					"name": "Get Driver Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Vehicle Photos",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "vehicle_photo_1",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "vehicle_photo_2",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "vehicle_photo_3",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver/vehicle-photos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "vehicle-photos"]
+						}
+					}
+				},
+				{
+					"name": "Get Public Driver Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/profile/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "profile", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Ride Management",
+			"item": [
+				{
+					"name": "Get Ride Management",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/ride-management",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "ride-management"]
+						}
+					}
+				},
+				{
+					"name": "Create Ride Form",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "create"]
+						}
+					}
+				},
+				{
+					"name": "Create Ride",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"station_location\": \"Central Station\",\n    \"destination\": \"Airport\",\n    \"date\": \"2024-01-15\",\n    \"time\": \"10:00\",\n    \"available_seats\": 4,\n    \"is_exclusive\": false,\n    \"is_two_way\": true,\n    \"return_date\": \"2024-01-15\",\n    \"return_time\": \"18:00\",\n    \"return_available_seats\": 4,\n    \"return_is_exclusive\": false,\n    \"go_to_price_per_person\": 25.00,\n    \"return_price_per_person\": 25.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides"]
+						}
+					}
+				},
+				{
+					"name": "Get My Rides",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/my-rides",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "my-rides"]
+						}
+					}
+				},
+				{
+					"name": "Edit Ride",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1/edit",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1", "edit"]
+						}
+					}
+				},
+				{
+					"name": "Update Ride",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"station_location\": \"Central Station\",\n    \"destination\": \"Airport\",\n    \"date\": \"2024-01-15\",\n    \"time\": \"10:00\",\n    \"available_seats\": 3,\n    \"is_exclusive\": false,\n    \"is_two_way\": true,\n    \"return_date\": \"2024-01-15\",\n    \"return_time\": \"18:00\",\n    \"return_available_seats\": 3,\n    \"return_is_exclusive\": false,\n    \"go_to_price_per_person\": 30.00,\n    \"return_price_per_person\": 30.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Ride Customers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1/customers/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1", "customers", "go"]
+						}
+					}
+				},
+				{
+					"name": "Get Earnings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/earnings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "earnings"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Find Rides",
+			"item": [
+				{
+					"name": "Find Available Rides",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/find-rides",
+							"host": ["{{base_url}}"],
+							"path": ["api", "find-rides"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Booking",
+			"item": [
+				{
+					"name": "Show Payment Page",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/booking/payment/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "payment", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Show Seat Selection",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/booking/seat-selection/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "seat-selection", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Process Seat Selection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"number_of_seats\": 2,\n    \"selected_seats\": [1, 2],\n    \"contact_phone\": \"+1234567890\",\n    \"passenger_names\": [\"Uylong Song\", \"Jane Doe\"],\n    \"special_requests\": \"Please pick up at the main entrance\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/booking/seat-selection/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "seat-selection", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Process Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"booking_data\": {\n        \"number_of_seats\": 2,\n        \"selected_seats\": [1, 2],\n        \"passenger_names\": [\"Uylong Song\", \"Jane Doe\"],\n        \"contact_phone\": \"+1234567890\",\n        \"special_requests\": \"Please pick up at the main entrance\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/booking/process/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "process", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Show Thank You",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/booking/thank-you/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "thank-you", "1"]
+						}
+					}
+				},
+				{
+					"name": "Show Confirmation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/booking/confirmation/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "booking", "confirmation", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payment",
+			"item": [
+				{
+					"name": "Show Payment Page",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payment/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Process Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payment_method\": \"visa\",\n    \"card_number\": \"4111111111111111\",\n    \"card_expiry\": \"12/25\",\n    \"card_cvv\": \"123\",\n    \"card_holder_name\": \"Uylong Song\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment/process/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment", "process", "1", "go"]
+						}
+					}
+				},
+				{
+					"name": "Show QR Payment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payment/qr/1/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment", "qr", "1", "go"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Bookings",
+			"item": [
+				{
+					"name": "Get User Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/bookings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "bookings"]
+						}
+					}
+				},
+				{
+					"name": "Get Booking Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/bookings/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "bookings", "1"]
+						}
+					}
+				},
+				{
+					"name": "Print Receipt",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/bookings/1/receipt",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "bookings", "1", "receipt"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Ride Completion",
+			"item": [
+				{
+					"name": "Mark Ride as Ongoing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1/ongoing/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1", "ongoing", "go"]
+						}
+					}
+				},
+				{
+					"name": "Mark Ride as Completed",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1/complete/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1", "complete", "go"]
+						}
+					}
+				},
+				{
+					"name": "Show Review Form",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/bookings/1/review/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "bookings", "1", "review", "go"]
+						}
+					}
+				},
+				{
+					"name": "Submit Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"overall_rating\": 5,\n    \"driver_rating\": 5,\n    \"vehicle_rating\": 4,\n    \"punctuality_rating\": 5,\n    \"safety_rating\": 5,\n    \"comfort_rating\": 4,\n    \"review_text\": \"Great ride! Driver was very professional and the vehicle was clean.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/bookings/1/review/go",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "bookings", "1", "review", "go"]
+						}
+					}
+				},
+				{
+					"name": "Get Ride Reviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/rides/1/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "rides", "1", "reviews"]
+						}
+					}
+				},
+				{
+					"name": "Get All Reviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["api", "driver", "reviews"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Misc",
+			"item": [
+				{
+					"name": "Get Available Rides",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rides",
+							"host": ["{{base_url}}"],
+							"path": ["api", "rides"]
+						}
+					}
+				},
+				{
+					"name": "Get User History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/history",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "history"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_auth_token_here",
+			"type": "string"
+		}
+	]
+} 

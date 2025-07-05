@@ -50,4 +50,72 @@ class PasswordChangeController extends Controller
 
         return redirect()->route('user.profile')->with('success', 'Password changed successfully!');
     }
+
+    // API Methods
+    public function apiShow(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to change your password.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        return response()->json([
+            'message' => 'Password change form data',
+            'status' => 'success',
+            'data' => [
+                'form_fields' => [
+                    'current_password' => 'required',
+                    'new_password' => 'required|min:8|confirmed'
+                ]
+            ]
+        ]);
+    }
+
+    public function apiUpdate(Request $request)
+    {
+        // Get user from token authentication
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Please login to change your password.',
+                'status' => 'error'
+            ], 401);
+        }
+
+        // Validation
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Check current password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect.',
+                'status' => 'error',
+                'errors' => ['current_password' => ['Current password is incorrect.']]
+            ], 422);
+        }
+
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password changed successfully!',
+            'status' => 'success'
+        ]);
+    }
 } 
