@@ -29,17 +29,32 @@
                 @foreach($goRides as $ride)
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card h-100 border-0 shadow-sm ride-card {{ $ride->available_seats <= 0 ? 'fully-booked' : '' }}" 
-                             style="cursor: pointer; transition: transform 0.2s;" 
-                             onclick="window.location.href='{{ route('driver.ride.customers', ['ride' => $ride->id, 'tripType' => 'go']) }}'">
+                             style="transition: transform 0.2s;">
                             <div class="card-body">
+                                <!-- Ride Status Badge -->
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h6 class="card-title mb-0 text-primary">
                                         <i class="fas fa-map-marker-alt me-1"></i>
                                         {{ $ride->station_location }}
                                     </h6>
-                                    <span class="badge {{ $ride->is_exclusive ? 'bg-danger' : 'bg-success' }} small">
-                                        {{ $ride->is_exclusive ? 'EXCLUSIVE' : 'SHARED' }}
-                                    </span>
+                                    <div class="d-flex flex-column align-items-end">
+                                        <span class="badge {{ $ride->is_exclusive ? 'bg-danger' : 'bg-success' }} small mb-1">
+                                            {{ $ride->is_exclusive ? 'EXCLUSIVE' : 'SHARED' }}
+                                        </span>
+                                        @if($ride->go_completion_status === 'pending')
+                                            <span class="badge bg-secondary small">
+                                                <i class="fas fa-clock me-1"></i>Pending
+                                            </span>
+                                        @elseif($ride->go_completion_status === 'ongoing')
+                                            <span class="badge bg-warning text-dark small">
+                                                <i class="fas fa-play me-1"></i>Ongoing
+                                            </span>
+                                        @elseif($ride->go_completion_status === 'completed')
+                                            <span class="badge bg-success small">
+                                                <i class="fas fa-check-circle me-1"></i>Completed
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                                 
                                 <div class="text-center mb-2">
@@ -84,11 +99,37 @@
                                     </div>
                                 </div>
                                 
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-outline-primary btn-sm">
+                                <div class="d-flex gap-2 mt-3">
+                                    <a href="{{ route('driver.ride.customers', ['ride' => $ride->id, 'tripType' => 'go']) }}" 
+                                       class="btn btn-outline-primary btn-sm flex-fill">
                                         <i class="fas fa-users me-1"></i>
                                         View Customers
-                                    </button>
+                                    </a>
+                                    
+                                    @if($ride->go_completion_status === 'pending')
+                                        <form method="POST" action="{{ route('driver.ride.ongoing', ['rideId' => $ride->id, 'tripType' => 'go']) }}" 
+                                              class="flex-fill" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-warning btn-sm w-100" 
+                                                    onclick="return confirm('Are you sure you want to start this ride? This will remove it from the find rides page.')">
+                                                <i class="fas fa-play me-1"></i>Start Ride
+                                            </button>
+                                        </form>
+                                    @elseif($ride->go_completion_status === 'ongoing')
+                                        <form method="POST" action="{{ route('driver.ride.complete', ['rideId' => $ride->id, 'tripType' => 'go']) }}" 
+                                              class="flex-fill" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm w-100" 
+                                                    onclick="return confirm('Are you sure you want to mark this ride as completed?')">
+                                                <i class="fas fa-check-circle me-1"></i>Complete
+                                            </button>
+                                        </form>
+                                    @elseif($ride->go_completion_status === 'completed')
+                                        <a href="{{ route('driver.ride.reviews', $ride->id) }}" 
+                                           class="btn btn-outline-info btn-sm flex-fill">
+                                            <i class="fas fa-star me-1"></i>View Reviews
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -112,17 +153,32 @@
             @foreach($returnRides as $ride)
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card h-100 border-0 shadow-sm ride-card {{ $ride->return_available_seats <= 0 ? 'fully-booked' : '' }}" 
-                         style="cursor: pointer; transition: transform 0.2s;" 
-                         onclick="window.location.href='{{ route('driver.ride.customers', ['ride' => $ride->id, 'tripType' => 'return']) }}'">
+                         style="transition: transform 0.2s;">
                         <div class="card-body">
+                            <!-- Ride Status Badge -->
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h6 class="card-title mb-0 text-info">
                                     <i class="fas fa-map-marker-alt me-1"></i>
                                     {{ $ride->destination }}
                                 </h6>
-                                <span class="badge {{ $ride->return_is_exclusive ? 'bg-danger' : 'bg-success' }} small">
-                                    {{ $ride->return_is_exclusive ? 'EXCLUSIVE' : 'SHARED' }}
-                                </span>
+                                <div class="d-flex flex-column align-items-end">
+                                    <span class="badge {{ $ride->return_is_exclusive ? 'bg-danger' : 'bg-success' }} small mb-1">
+                                        {{ $ride->return_is_exclusive ? 'EXCLUSIVE' : 'SHARED' }}
+                                    </span>
+                                    @if($ride->return_completion_status === 'pending')
+                                        <span class="badge bg-secondary small">
+                                            <i class="fas fa-clock me-1"></i>Pending
+                                        </span>
+                                    @elseif($ride->return_completion_status === 'ongoing')
+                                        <span class="badge bg-warning text-dark small">
+                                            <i class="fas fa-play me-1"></i>Ongoing
+                                        </span>
+                                    @elseif($ride->return_completion_status === 'completed')
+                                        <span class="badge bg-success small">
+                                            <i class="fas fa-check-circle me-1"></i>Completed
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                             
                             <div class="text-center mb-2">
@@ -167,11 +223,37 @@
                                 </div>
                             </div>
                             
-                            <div class="text-center mt-3">
-                                <button class="btn btn-outline-info btn-sm">
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="{{ route('driver.ride.customers', ['ride' => $ride->id, 'tripType' => 'return']) }}" 
+                                   class="btn btn-outline-info btn-sm flex-fill">
                                     <i class="fas fa-users me-1"></i>
                                     View Customers
-                                </button>
+                                </a>
+                                
+                                @if($ride->return_completion_status === 'pending')
+                                    <form method="POST" action="{{ route('driver.ride.ongoing', ['rideId' => $ride->id, 'tripType' => 'return']) }}" 
+                                          class="flex-fill" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning btn-sm w-100" 
+                                                onclick="return confirm('Are you sure you want to start this return ride? This will remove it from the find rides page.')">
+                                            <i class="fas fa-play me-1"></i>Start Ride
+                                        </button>
+                                    </form>
+                                @elseif($ride->return_completion_status === 'ongoing')
+                                    <form method="POST" action="{{ route('driver.ride.complete', ['rideId' => $ride->id, 'tripType' => 'return']) }}" 
+                                          class="flex-fill" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm w-100" 
+                                                onclick="return confirm('Are you sure you want to mark this return ride as completed?')">
+                                            <i class="fas fa-check-circle me-1"></i>Complete
+                                        </button>
+                                    </form>
+                                @elseif($ride->return_completion_status === 'completed')
+                                    <a href="{{ route('driver.ride.reviews', $ride->id) }}" 
+                                       class="btn btn-outline-info btn-sm flex-fill">
+                                        <i class="fas fa-star me-1"></i>View Reviews
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>

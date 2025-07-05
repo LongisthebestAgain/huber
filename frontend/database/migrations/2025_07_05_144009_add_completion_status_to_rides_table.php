@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('rides', function (Blueprint $table) {
             // Add completion status fields
-            $table->enum('go_completion_status', ['pending', 'completed', 'cancelled'])->default('pending')->after('go_to_exclusive_price');
-            $table->enum('return_completion_status', ['pending', 'completed', 'cancelled'])->default('pending')->after('go_completion_status');
+            $table->enum('go_completion_status', ['pending', 'ongoing', 'completed', 'cancelled'])->default('pending')->after('go_to_exclusive_price');
+            $table->enum('return_completion_status', ['pending', 'ongoing', 'completed', 'cancelled'])->default('pending')->after('go_completion_status');
             $table->timestamp('go_completed_at')->nullable()->after('return_completion_status');
             $table->timestamp('return_completed_at')->nullable()->after('go_completed_at');
         });

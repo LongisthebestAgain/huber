@@ -112,6 +112,39 @@
                                                         <small class="text-muted">Booked on:</small>
                                                         <div class="fw-semibold">{{ $booking->created_at->format('M d, Y') }}</div>
                                                     </div>
+                                                    
+                                                    <!-- Review Button for Completed Rides Only -->
+                                                    @php
+                                                        $rideStatus = $booking->trip_type === 'return' ? $booking->ride->return_completion_status : $booking->ride->go_completion_status;
+                                                        
+                                                        $hasReviewed = \App\Models\RideReview::where('ride_purchase_id', $booking->id)
+                                                            ->where('trip_type', $booking->trip_type)
+                                                            ->exists();
+                                                    @endphp
+                                                    
+                                                    @if($rideStatus === 'pending')
+                                                        <span class="badge bg-secondary mb-2">
+                                                            <i class="fas fa-clock me-1"></i>Pending
+                                                        </span>
+                                                    @elseif($rideStatus === 'ongoing')
+                                                        <span class="badge bg-warning text-dark mb-2">
+                                                            <i class="fas fa-play me-1"></i>Ongoing
+                                                        </span>
+                                                    @elseif($rideStatus === 'completed' && !$hasReviewed)
+                                                        <a href="{{ route('user.booking.review', ['bookingId' => $booking->id, 'tripType' => $booking->trip_type]) }}" 
+                                                           class="btn btn-warning btn-sm mb-2">
+                                                            <i class="fas fa-star me-1"></i>Review Ride
+                                                        </a>
+                                                    @elseif($hasReviewed)
+                                                        <span class="badge bg-success mb-2">
+                                                            <i class="fas fa-check me-1"></i>Reviewed
+                                                        </span>
+                                                    @elseif($rideStatus === 'completed')
+                                                        <span class="badge bg-success mb-2">
+                                                            <i class="fas fa-check-circle me-1"></i>Completed
+                                                        </span>
+                                                    @endif
+                                                    
                                                     <a href="{{ route('user.booking.receipt', $booking->id) }}" class="btn btn-success btn-sm" target="_blank">
                                                         <i class="fas fa-print me-1"></i>Print Receipt
                                                     </a>

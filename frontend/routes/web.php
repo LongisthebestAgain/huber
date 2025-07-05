@@ -12,6 +12,7 @@ use App\Http\Controllers\DriverRideManagementController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RideCompletionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +83,13 @@ Route::get('/payment/qr/{rideId}/{tripType?}', [PaymentController::class, 'showQ
 Route::get('/user/bookings', [UserBookingController::class, 'index'])->name('user.bookings');
 Route::get('/user/bookings/{bookingId}', [UserBookingController::class, 'show'])->name('user.booking.details');
 Route::get('/user/bookings/{bookingId}/receipt', [UserBookingController::class, 'printReceipt'])->name('user.booking.receipt');
+
+// Ride completion and review routes
+Route::post('/driver/rides/{rideId}/ongoing/{tripType?}', [RideCompletionController::class, 'markAsOngoing'])->name('driver.ride.ongoing');
+Route::post('/driver/rides/{rideId}/complete/{tripType?}', [RideCompletionController::class, 'markAsCompleted'])->name('driver.ride.complete');
+Route::get('/user/bookings/{bookingId}/review/{tripType?}', [RideCompletionController::class, 'showReviewForm'])->name('user.booking.review');
+Route::post('/user/bookings/{bookingId}/review/{tripType?}', [RideCompletionController::class, 'submitReview'])->name('user.booking.review.submit');
+Route::get('/driver/rides/{rideId}/reviews', [RideCompletionController::class, 'viewRideReviews'])->name('driver.ride.reviews');
 
 // Password change routes
 Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');

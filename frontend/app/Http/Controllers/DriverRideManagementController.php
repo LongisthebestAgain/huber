@@ -309,8 +309,8 @@ class DriverRideManagementController extends Controller
         $rides = $query->get();
         $rideEntries = [];
         foreach ($rides as $ride) {
-            // Outgoing trip - only add if seats are available
-            if ($ride->available_seats > 0) {
+            // Outgoing trip - only add if seats are available AND ride is still pending
+            if ($ride->available_seats > 0 && $ride->go_completion_status === 'pending') {
                 $hasBookedGo = false;
                 if ($userId) {
                     $hasBookedGo = \App\Models\RidePurchase::where('ride_id', $ride->id)
@@ -332,8 +332,8 @@ class DriverRideManagementController extends Controller
                     'has_booked' => $hasBookedGo,
                 ];
             }
-            // Return trip (if exists) - only add if seats are available
-            if ($ride->is_two_way && $ride->return_date && $ride->return_time && $ride->return_available_seats > 0) {
+            // Return trip (if exists) - only add if seats are available AND return ride is still pending
+            if ($ride->is_two_way && $ride->return_date && $ride->return_time && $ride->return_available_seats > 0 && $ride->return_completion_status === 'pending') {
                 $hasBookedReturn = false;
                 if ($userId) {
                     $hasBookedReturn = \App\Models\RidePurchase::where('ride_id', $ride->id)
