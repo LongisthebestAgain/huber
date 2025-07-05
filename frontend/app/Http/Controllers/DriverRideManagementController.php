@@ -364,7 +364,7 @@ class DriverRideManagementController extends Controller
                 });
             } else { // shared
                 $rideEntries = array_filter($rideEntries, function($entry) {
-                    return $entry['is_exclusive'] === false || $entry['is_exclusive'] === 0 || is_null($entry['is_exclusive']);
+                    return ($entry['is_exclusive'] === false || $entry['is_exclusive'] === 0 || is_null($entry['is_exclusive'])) && $entry['available_seats'] > 0;
                 });
             }
         }
@@ -466,6 +466,67 @@ class DriverRideManagementController extends Controller
         
         $bookings = $query->orderBy('created_at', 'desc')->get();
 
-        return view('ride-management.ride-customers', compact('user', 'ride', 'bookings', 'tripType'));
+        // Calculate seat information for visualization
+        $seatInfo = $this->calculateSeatInfo($ride, $tripType, $bookings);
+
+        return view('ride-management.ride-customers', compact('user', 'ride', 'bookings', 'tripType', 'seatInfo'));
+    }
+
+    private function calculateSeatInfo($ride, $tripType, $bookings)
+    {
+        // Determine total seats and available seats based on trip type
+        if ($tripType === 'return' && $ride->is_two_way) {
+            $totalSeats = $ride->return_available_seats + $bookings->where('trip_type', 'return')->sum('number_of_seats');
+            $availableSeats = $ride->return_available_seats;
+        } else {
+            $totalSeats = $ride->available_seats + $bookings->where('trip_type', 'go')->sum('number_of_seats');
+            $availableSeats = $ride->available_seats;
+        }
+
+        // Create seat map with customer information
+        $seatMap = [];
+        for ($seat = 1; $seat <= $totalSeats; $seat++) {
+            $seatMap[$seat] = [
+                'seat_number' => $seat,
+                'is_booked' => false,
+                'customer_name' => null,
+                'booking_reference' => null,
+                'contact_phone' => null,
+                'passenger_name' => null,
+                'booking_id' => null
+            ];
+        }
+
+        // Populate booked seats with customer information
+        foreach ($bookings as $booking) {
+            if ($booking->selected_seats && is_array($booking->selected_seats)) {
+                foreach ($booking->selected_seats as $seatNumber) {
+                    if (isset($seatMap[$seatNumber])) {
+                        $seatMap[$seatNumber]['is_booked'] = true;
+                        $seatMap[$seatNumber]['customer_name'] = $booking->user ? $booking->user->name : 'Unknown';
+                        $seatMap[$seatNumber]['booking_reference'] = $booking->booking_reference;
+                        $seatMap[$seatNumber]['contact_phone'] = $booking->contact_phone;
+                        $seatMap[$seatNumber]['booking_id'] = $booking->id;
+                        
+                        // Find passenger name for this specific seat
+                        if ($booking->passenger_details && is_array($booking->passenger_details)) {
+                            foreach ($booking->passenger_details as $passenger) {
+                                if (isset($passenger['seat_number']) && $passenger['seat_number'] == $seatNumber) {
+                                    $seatMap[$seatNumber]['passenger_name'] = $passenger['name'] ?? 'Unknown';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return [
+            'total_seats' => $totalSeats,
+            'available_seats' => $availableSeats,
+            'booked_seats' => $totalSeats - $availableSeats,
+            'seat_map' => $seatMap
+        ];
     }
 } 

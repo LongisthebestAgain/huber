@@ -32,6 +32,10 @@ class Ride extends Model
         'return_price_per_person',
         'go_to_exclusive_price',
         'return_exclusive_price',
+        'go_completion_status',
+        'return_completion_status',
+        'go_completed_at',
+        'return_completed_at',
     ];
 
     protected $casts = [
@@ -43,6 +47,8 @@ class Ride extends Model
         'return_price_per_person' => 'decimal:2',
         'go_to_exclusive_price' => 'decimal:2',
         'return_exclusive_price' => 'decimal:2',
+        'go_completed_at' => 'datetime',
+        'return_completed_at' => 'datetime',
     ];
 
     public function user()
@@ -53,5 +59,10 @@ class Ride extends Model
     public function ridePurchases()
     {
         return $this->hasMany(RidePurchase::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(RideReview::class);
     }
 } 

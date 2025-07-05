@@ -53,4 +53,29 @@ class UserBookingController extends Controller
 
         return view('user.booking-details', compact('booking', 'user'));
     }
+
+    public function printReceipt($bookingId)
+    {
+        $userData = session('user');
+        if (!$userData || !isset($userData['id'])) {
+            return redirect()->route('login')->with('error', 'Please login to print receipt.');
+        }
+
+        $user = User::find($userData['id']);
+        if (!$user) {
+            session()->forget(['user', 'user_role']);
+            return redirect()->route('login')->with('error', 'User not found. Please login again.');
+        }
+
+        $booking = RidePurchase::with(['ride.user'])
+            ->where('id', $bookingId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$booking) {
+            return redirect()->route('user.bookings')->with('error', 'Booking not found.');
+        }
+
+        return view('user.receipt', compact('booking', 'user'));
+    }
 }

@@ -112,8 +112,8 @@
                                                         <small class="text-muted">Booked on:</small>
                                                         <div class="fw-semibold">{{ $booking->created_at->format('M d, Y') }}</div>
                                                     </div>
-                                                    <a href="{{ route('user.booking.details', $booking->id) }}" class="btn btn-outline-primary btn-sm">
-                                                        <i class="fas fa-eye me-1"></i>View Details
+                                                    <a href="{{ route('user.booking.receipt', $booking->id) }}" class="btn btn-success btn-sm" target="_blank">
+                                                        <i class="fas fa-print me-1"></i>Print Receipt
                                                     </a>
                                                 </div>
                                             </div>

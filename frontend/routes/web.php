@@ -11,6 +11,7 @@ use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\DriverRideManagementController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserBookingController;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,9 +73,15 @@ Route::post('/booking/process/{rideId}/{tripType?}', [BookingController::class, 
 Route::get('/booking/thank-you/{bookingId}', [BookingController::class, 'showThankYou'])->name('booking.thank-you');
 Route::get('/booking/confirmation/{bookingId}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
 
+// Payment routes
+Route::get('/payment/{rideId}/{tripType?}', [PaymentController::class, 'showPaymentPage'])->name('payment.show');
+Route::post('/payment/process/{rideId}/{tripType?}', [PaymentController::class, 'processPayment'])->name('payment.process');
+Route::get('/payment/qr/{rideId}/{tripType?}', [PaymentController::class, 'showQRPayment'])->name('payment.qr');
+
 // User booking routes
 Route::get('/user/bookings', [UserBookingController::class, 'index'])->name('user.bookings');
 Route::get('/user/bookings/{bookingId}', [UserBookingController::class, 'show'])->name('user.booking.details');
+Route::get('/user/bookings/{bookingId}/receipt', [UserBookingController::class, 'printReceipt'])->name('user.booking.receipt');
 
 // Password change routes
 Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');

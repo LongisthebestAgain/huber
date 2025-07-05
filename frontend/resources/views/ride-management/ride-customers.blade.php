@@ -177,6 +177,77 @@
     </div>
 </div>
 
+<!-- Seat Visualization Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header {{ $tripType === 'return' ? 'bg-warning text-dark' : 'bg-info text-white' }}">
+        <h5 class="mb-0">
+            <i class="fas fa-chair me-2"></i>
+            @if($tripType === 'return')
+                Return Trip Seat Map
+            @elseif($tripType === 'go')
+                Go Trip Seat Map
+            @else
+                Seat Map
+            @endif
+            <span class="badge bg-light text-dark ms-2">{{ $seatInfo['total_seats'] }} Total Seats</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="seat-map-container">
+                    <div class="seat-map">
+                        @foreach($seatInfo['seat_map'] as $seat)
+                            <div class="seat-item" 
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 title="{{ $seat['is_booked'] ? 'Booked by: ' . $seat['customer_name'] . ' | Passenger: ' . $seat['passenger_name'] . ' | Phone: ' . $seat['contact_phone'] . ' | Ref: ' . $seat['booking_reference'] : 'Available seat' }}">
+                                <div class="seat-label {{ $seat['is_booked'] ? 'booked' : 'available' }}">
+                                    {{ $seat['seat_number'] }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="seat-stats">
+                    <h6 class="fw-bold mb-3">Seat Statistics</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Seats:</span>
+                        <span class="fw-semibold">{{ $seatInfo['total_seats'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Available:</span>
+                        <span class="fw-semibold text-success">{{ $seatInfo['available_seats'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Booked:</span>
+                        <span class="fw-semibold text-danger">{{ $seatInfo['booked_seats'] }}</span>
+                    </div>
+                    
+                    <div class="seat-legend">
+                        <h6 class="fw-bold mb-2">Legend</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="seat-legend-item available me-2"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend-item booked me-2"></div>
+                            <span class="text-danger fw-bold">Booked</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tip:</strong> Hover over booked seats to see customer details.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Customers Card -->
 <div class="card shadow-sm">
     <div class="card-header {{ $tripType === 'return' ? 'bg-warning text-dark' : 'bg-success text-white' }}">
@@ -326,4 +397,126 @@
         @endif
     </div>
 </div>
+
+<style>
+.seat-map-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.seat-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.seat-item {
+    text-align: center;
+    position: relative;
+}
+
+.seat-label {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.seat-label.available {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.seat-label.available:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.seat-label.booked {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    cursor: help;
+}
+
+.seat-label.booked:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.seat-legend-item {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+}
+
+.seat-legend-item.available {
+    background: #28a745;
+}
+
+.seat-legend-item.booked {
+    background: #dc3545;
+}
+
+.seat-stats {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+/* Custom tooltip styles */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+.tooltip-inner {
+    max-width: 300px;
+    text-align: left;
+    padding: 0.75rem;
+    background-color: #343a40;
+    border-radius: 8px;
+}
+
+.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #343a40;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            delay: { show: 100, hide: 100 }
+        });
+    });
+
+    // Add click event for booked seats to show more details
+    document.querySelectorAll('.seat-label.booked').forEach(function(seat) {
+        seat.addEventListener('click', function() {
+            const tooltip = bootstrap.Tooltip.getInstance(this);
+            if (tooltip) {
+                tooltip.show();
+                setTimeout(() => {
+                    tooltip.hide();
+                }, 3000);
+            }
+        });
+    });
+});
+</script>
 @endsection 

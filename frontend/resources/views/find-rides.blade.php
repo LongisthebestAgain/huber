@@ -151,9 +151,9 @@
                                         @endif
                                     @else
                                         @if($entry['has_booked'])
-                                            <button class="btn btn-secondary px-4 py-2" disabled>
-                                                <i class="fas fa-check me-2"></i>Booked
-                                            </button>
+                                            <a href="{{ route('booking.seat-selection', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-warning px-4 py-2">
+                                                <i class="fas fa-plus me-2"></i>Book Another
+                                            </a>
                                         @else
                                             <a href="{{ route('booking.seat-selection', ['rideId' => $entry['ride']->id, 'tripType' => $entry['type'] === 'Back' ? 'return' : 'go']) }}" class="btn btn-primary px-4 py-2">
                                                 <i class="fas fa-chair me-2"></i>Select Seats

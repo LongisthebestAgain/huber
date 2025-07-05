@@ -169,20 +169,6 @@ class BookingController extends Controller
             $pricePerSeat = $ride->go_to_price_per_person;
         }
 
-        // Debug information
-        Log::info('Seat selection debug', [
-            'numberOfSeats' => $numberOfSeats,
-            'numberOfSeatsType' => gettype($numberOfSeats),
-            'selectedSeats' => $selectedSeats,
-            'selectedSeatsCount' => is_array($selectedSeats) ? count($selectedSeats) : 'not array',
-            'passengerNames' => $passengerNames,
-            'passengerNamesCount' => is_array($passengerNames) ? count($passengerNames) : 'not array',
-            'availableSeats' => $availableSeats,
-            'tripType' => $tripType,
-            'rideId' => $rideId,
-            'allRequestData' => $request->all()
-        ]);
-
         // Check if any seats are available
         if ($availableSeats <= 0) {
             return redirect()->route('find.rides')->with('error', 'Sorry, this ride is fully booked and no longer available.');
@@ -228,9 +214,6 @@ class BookingController extends Controller
             return back()->withErrors(['passenger_names' => 'Number of passenger names must match the number of seats.']);
         }
 
-        // Calculate total price
-        $totalPrice = $pricePerSeat * (int)$numberOfSeats;
-
         // Create passenger details array
         $passengerDetails = [];
         for ($i = 0; $i < (int)$numberOfSeats; $i++) {
@@ -240,68 +223,23 @@ class BookingController extends Controller
             ];
         }
 
-        try {
-            DB::beginTransaction();
+        // Store booking data in session for payment page
+        $bookingData = [
+            'number_of_seats' => (int)$numberOfSeats,
+            'selected_seats' => $selectedSeats,
+            'contact_phone' => $contactPhone,
+            'passenger_names' => $passengerNames,
+            'passenger_details' => $passengerDetails,
+            'special_requests' => $specialRequests,
+            'date' => $date,
+            'time' => $time,
+        ];
 
-            // Generate booking reference
-            $bookingReference = 'BK' . date('Ymd') . strtoupper(substr(md5(uniqid()), 0, 8));
+        session(['pending_booking_data' => $bookingData]);
 
-            // Log booking details before creation
-            Log::info('Creating booking', [
-                'bookingReference' => $bookingReference,
-                'rideId' => $rideId,
-                'userId' => $user->id,
-                'numberOfSeats' => $numberOfSeats,
-                'totalPrice' => $totalPrice,
-                'tripType' => $tripType,
-                'selectedSeats' => $selectedSeats,
-                'passengerDetails' => $passengerDetails
-            ]);
-
-            // Create the booking
-            $booking = RidePurchase::create([
-                'ride_id' => $rideId,
-                'user_id' => $user->id,
-                'number_of_seats' => (int)$numberOfSeats,
-                'total_price' => $totalPrice,
-                'payment_status' => 'completed', // For now, assume payment is completed
-                'payment_method' => 'visa', // Default for now
-                'card_last_four' => '1234', // Placeholder
-                'card_type' => 'visa', // Default for now
-                'special_requests' => $specialRequests,
-                'trip_type' => $tripType,
-                'passenger_details' => $passengerDetails,
-                'selected_seats' => $selectedSeats,
-                'seats_confirmed' => true,
-                'contact_phone' => $contactPhone,
-                'booking_reference' => $bookingReference,
-                'booking_date' => $date,
-                'booking_time' => $time,
-            ]);
-
-            // Update available seats
-            if ($tripType === 'return' && $ride->is_two_way) {
-                $ride->return_available_seats = $availableSeats - (int)$numberOfSeats;
-            } else {
-                $ride->available_seats = $availableSeats - (int)$numberOfSeats;
-            }
-            
-            $ride->save();
-
-            DB::commit();
-
-            // Store booking ID in session for thank you page
-            session(['last_booking_id' => $booking->id]);
-
-            return redirect()->route('booking.thank-you', $booking->id)
-                ->with('success', 'Booking completed successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Booking failed: ' . $e->getMessage());
-            
-            return back()->withErrors(['general' => 'An error occurred while processing your booking. Please try again.']);
-        }
+        // Redirect to payment page
+        return redirect()->route('payment.show', ['rideId' => $rideId, 'tripType' => $tripType])
+            ->with('success', 'Seats selected successfully! Please complete your payment.');
     }
 
     public function processBooking(Request $request, $rideId, $tripType = 'go')
