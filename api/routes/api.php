@@ -68,4 +68,45 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Misc routes
     Route::get('/rides', [\App\Http\Controllers\BookingController::class, 'apiAvailableRides']);
+});
+
+// Admin authentication (public)
+Route::post('/admin/login', [\App\Http\Controllers\AdminAuthController::class, 'apiLogin']);
+Route::post('/admin/logout', [\App\Http\Controllers\AdminAuthController::class, 'apiLogout']);
+
+// Admin protected routes
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'apiIndex']);
+
+    // Users
+    Route::get('/users', [\App\Http\Controllers\AdminUserController::class, 'apiIndex']);
+    Route::post('/users', [\App\Http\Controllers\AdminUserController::class, 'apiStore']);
+    Route::get('/users/{id}', [\App\Http\Controllers\AdminUserController::class, 'apiShow']);
+    Route::put('/users/{id}', [\App\Http\Controllers\AdminUserController::class, 'apiUpdate']);
+    Route::delete('/users/{id}', [\App\Http\Controllers\AdminUserController::class, 'apiDestroy']);
+
+    // Drivers
+    Route::get('/drivers', [\App\Http\Controllers\AdminDriverController::class, 'apiIndex']);
+    Route::post('/drivers', [\App\Http\Controllers\AdminDriverController::class, 'apiStore']);
+    Route::get('/drivers/{id}', [\App\Http\Controllers\AdminDriverController::class, 'apiShow']);
+    Route::put('/drivers/{id}', [\App\Http\Controllers\AdminDriverController::class, 'apiUpdate']);
+    Route::delete('/drivers/{id}', [\App\Http\Controllers\AdminDriverController::class, 'apiDestroy']);
+
+    // Rides
+    Route::get('/rides', [\App\Http\Controllers\AdminRideController::class, 'apiIndex']);
+    Route::post('/rides', [\App\Http\Controllers\AdminRideController::class, 'apiStore']);
+    Route::get('/rides/{id}', [\App\Http\Controllers\AdminRideController::class, 'apiShow']);
+    Route::put('/rides/{id}', [\App\Http\Controllers\AdminRideController::class, 'apiUpdate']);
+    Route::delete('/rides/{id}', [\App\Http\Controllers\AdminRideController::class, 'apiDestroy']);
+    Route::get('/rides/{id}/passengers', [\App\Http\Controllers\AdminRideController::class, 'apiPassengers']);
+
+    // Driver Documents
+    Route::get('/driver-documents', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiIndex']);
+    Route::post('/driver-documents', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiStore']);
+    Route::get('/driver-documents/{id}', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiShow']);
+    Route::put('/driver-documents/{id}', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiUpdate']);
+    Route::delete('/driver-documents/{id}', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiDestroy']);
+    Route::post('/driver-documents/{id}/verify', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiVerify']);
+    Route::post('/driver-documents/{id}/unverify', [\App\Http\Controllers\AdminDriverDocumentController::class, 'apiUnverify']);
 }); 

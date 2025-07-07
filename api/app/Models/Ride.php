@@ -56,6 +56,11 @@ class Ride extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'user_id')->where('role', 'driver');
+    }
+
     public function ridePurchases()
     {
         return $this->hasMany(RidePurchase::class);

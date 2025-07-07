@@ -1204,6 +1204,113 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Admin Login",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json", "type": "text" },
+									{ "key": "Accept", "value": "application/json", "type": "text" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/admin/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "login"]
+								}
+							}
+						},
+						{
+							"name": "Admin Logout",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+									{ "key": "Accept", "value": "application/json", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/api/admin/logout",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "logout"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Dashboard",
+					"item": [
+						{
+							"name": "Get Dashboard Stats",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+									{ "key": "Accept", "value": "application/json", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/api/admin/dashboard",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "dashboard"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"item": [
+						{ "name": "List Users", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/users", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "users" ] } } },
+						{ "name": "Create User", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/users", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "users" ] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\",\n  \"phone\": \"1234567890\"\n}" } } },
+						{ "name": "Get User", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/users/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "users", ":id" ] } } },
+						{ "name": "Update User", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/users/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "users", ":id" ] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated User\",\n  \"email\": \"user@example.com\",\n  \"phone\": \"1234567890\",\n  \"password\": \"\",\n  \"password_confirmation\": \"\"\n}" } } },
+						{ "name": "Delete User", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/users/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "users", ":id" ] } } }
+					]
+				},
+				{
+					"name": "Drivers",
+					"item": [
+						{ "name": "List Drivers", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/drivers", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "drivers" ] } } },
+						{ "name": "Create Driver", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/drivers", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "drivers" ] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test Driver\",\n  \"email\": \"driver@example.com\",\n  \"password\": \"password\"\n}" } } },
+						{ "name": "Get Driver", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/drivers/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "drivers", ":id" ] } } },
+						{ "name": "Update Driver", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/drivers/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "drivers", ":id" ] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Driver\",\n  \"email\": \"driver@example.com\",\n  \"password\": \"\"\n}" } } },
+						{ "name": "Delete Driver", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/drivers/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "drivers", ":id" ] } } }
+					]
+				},
+				{
+					"name": "Rides",
+					"item": [
+						{ "name": "List Rides", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides" ] } } },
+						{ "name": "Create Ride", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides" ] }, "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"station_location\": \"A\",\n  \"destination\": \"B\",\n  \"date\": \"2024-06-01\",\n  \"time\": \"10:00:00\",\n  \"available_seats\": 4,\n  \"is_exclusive\": false,\n  \"is_two_way\": false,\n  \"go_to_price_per_person\": 100,\n  \"go_to_exclusive_price\": null\n}" } } },
+						{ "name": "Get Ride", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides", ":id" ] } } },
+						{ "name": "Update Ride", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides", ":id" ] }, "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"station_location\": \"A\",\n  \"destination\": \"B\",\n  \"date\": \"2024-06-01\",\n  \"time\": \"10:00:00\",\n  \"available_seats\": 4,\n  \"is_exclusive\": false,\n  \"is_two_way\": false,\n  \"go_to_price_per_person\": 100,\n  \"go_to_exclusive_price\": null\n}" } } },
+						{ "name": "Delete Ride", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides", ":id" ] } } },
+						{ "name": "List Passengers", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/rides/:id/passengers", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "rides", ":id", "passengers" ] } } }
+					]
+				},
+				{
+					"name": "Driver Documents",
+					"item": [
+						{ "name": "List Driver Documents", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents" ] } } },
+						{ "name": "Create Driver Document", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents" ] }, "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"license_number\": \"123456\"\n}" } } },
+						{ "name": "Get Driver Document", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents", ":id" ] } } },
+						{ "name": "Update Driver Document", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents", ":id" ] }, "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"license_number\": \"123456\"\n}" } } },
+						{ "name": "Delete Driver Document", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents/:id", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents", ":id" ] } } },
+						{ "name": "Verify Driver", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents/:id/verify", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents", ":id", "verify" ] } } },
+						{ "name": "Unverify Driver", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }, { "key": "Accept", "value": "application/json", "type": "text" } ], "url": { "raw": "{{base_url}}/api/admin/driver-documents/:id/unverify", "host": [ "{{base_url}}" ], "path": [ "api", "admin", "driver-documents", ":id", "unverify" ] } } }
+					]
+				}
+			]
 		}
 	],
 	"variable": [
