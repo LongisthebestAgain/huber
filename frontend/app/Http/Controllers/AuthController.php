@@ -59,6 +59,10 @@ class AuthController extends Controller
             
             // Redirect based on role
             if ($role === 'driver') {
+                // Check if driver is verified
+                if (!$user->is_verified) {
+                    return redirect()->route('driver.verification.pending');
+                }
                 return redirect()->route('driver.profile');
             } else {
                 return redirect()->route('user.profile');

@@ -63,6 +63,7 @@ class RegisterController extends Controller
             'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
             'role' => 'driver',
+            'is_verified' => false,
             'license_number' => $validated['license_number'],
             'license_expiry' => $validated['license_expiry'],
             'vehicle_model' => $validated['vehicle_model'],

@@ -22,4 +22,13 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
+
+    /**
+     * The application's middleware aliases.
+     *
+     * @var array
+     */
+    protected $middlewareAliases = [
+        // Middleware aliases are now registered in bootstrap/app.php for Laravel 11
+    ];
 } 

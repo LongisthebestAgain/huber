@@ -34,6 +34,7 @@
             once: true
         });
     </script>
+    @yield('scripts')
 </body>
 
 </html>
