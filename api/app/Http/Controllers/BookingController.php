@@ -517,7 +517,6 @@ class BookingController extends Controller
 
         try {
             $rides = Ride::with('user')
-                ->where('status', 'active')
                 ->where('date', '>=', now()->format('Y-m-d'))
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc')
@@ -551,7 +550,6 @@ class BookingController extends Controller
 
         try {
             $rides = Ride::with('user')
-                ->where('status', 'active')
                 ->where('date', '>=', now()->format('Y-m-d'))
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc')
