@@ -63,4 +63,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(RidePurchase::class);
     }
+
+    /**
+     * Check if the user is a verified driver
+     */
+    public function isVerifiedDriver(): bool
+    {
+        return $this->role === 'driver' && $this->is_verified === true;
+    }
+
+    /**
+     * Check if the user is a driver (verified or not)
+     */
+    public function isDriver(): bool
+    {
+        return $this->role === 'driver';
+    }
+
+    /**
+     * Check if the user is a driver but not verified
+     */
+    public function isUnverifiedDriver(): bool
+    {
+        return $this->role === 'driver' && $this->is_verified === false;
+    }
 }

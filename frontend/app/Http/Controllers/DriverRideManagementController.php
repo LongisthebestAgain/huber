@@ -45,16 +45,63 @@ class DriverRideManagementController extends Controller
 
     public function create()
     {
-        $userData = session('user');
-        if (!$userData || !isset($userData['id'])) {
-            return redirect()->route('login')->with('error', 'Please login to create a ride.');
+        try {
+            $userData = session('user');
+            if (!$userData || !isset($userData['id'])) {
+                \Illuminate\Support\Facades\Log::warning('Driver create access denied - no session', [
+                    'session_exists' => session()->has('user'),
+                    'session_data' => $userData,
+                    'route' => 'driver.rides.create'
+                ]);
+                return redirect()->route('login')->with('error', 'Please login to create a ride.');
+            }
+            
+            $user = \App\Models\User::find($userData['id']);
+            if (!$user) {
+                \Illuminate\Support\Facades\Log::error('Driver create access denied - user not found', [
+                    'session_user_id' => $userData['id'],
+                    'route' => 'driver.rides.create'
+                ]);
+                session()->forget(['user', 'user_role']);
+                return redirect()->route('login')->with('error', 'User not found. Please login again.');
+            }
+            
+            // Double-check driver verification (in case middleware was bypassed)
+            if (!$user->isVerifiedDriver()) {
+                \Illuminate\Support\Facades\Log::warning('Driver create access denied - not verified', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'role' => $user->role,
+                    'is_verified' => $user->is_verified,
+                    'route' => 'driver.rides.create'
+                ]);
+                
+                if ($user->isUnverifiedDriver()) {
+                    return redirect()->route('driver.verification.pending')
+                        ->with('error', 'Your driver account is pending verification. Please wait for admin approval.');
+                } else {
+                    return redirect()->route('home')->with('error', 'Access denied. Driver privileges required.');
+                }
+            }
+            
+            \Illuminate\Support\Facades\Log::info('Driver accessing create ride form', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'route' => 'driver.rides.create'
+            ]);
+            
+            return view('ride-management.create', compact('user'));
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in driver create method', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'route' => 'driver.rides.create'
+            ]);
+            
+            return redirect()->route('driver.ride.management')
+                ->with('error', 'An error occurred while loading the create form. Please try again.');
         }
-        $user = \App\Models\User::find($userData['id']);
-        if (!$user) {
-            session()->forget(['user', 'user_role']);
-            return redirect()->route('login')->with('error', 'User not found. Please login again.');
-        }
-        return view('ride-management.create', compact('user'));
     }
 
     public function store(\Illuminate\Http\Request $request)

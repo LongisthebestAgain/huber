@@ -110,4 +110,31 @@ Route::put('/password/change', [PasswordChangeController::class, 'update'])->nam
 Route::get('/rides', function () { return 'Available Rides'; })->name('rides');
 Route::get('/user/history', function () { return 'User History'; })->name('user.history');
 
+// Debug route for diagnosing driver access issues
+Route::get('/debug/driver-status', function () {
+    $debug = [
+        'session_exists' => session()->has('user'),
+        'session_data' => session('user'),
+        'user_role' => session('user_role'),
+        'timestamp' => now()->toDateTimeString(),
+    ];
+    
+    if (session()->has('user')) {
+        $user = \App\Models\User::find(session('user')['id']);
+        if ($user) {
+            $debug['user_found'] = true;
+            $debug['user_id'] = $user->id;
+            $debug['user_email'] = $user->email;
+            $debug['user_role'] = $user->role;
+            $debug['is_verified'] = $user->is_verified;
+            $debug['can_access_create'] = $user->isVerifiedDriver();
+        } else {
+            $debug['user_found'] = false;
+            $debug['error'] = 'User not found in database';
+        }
+    }
+    
+    return response()->json($debug);
+})->name('debug.driver.status');
+
 
